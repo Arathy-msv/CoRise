@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useTweened } from "@/components/campaign/CampaignGamifiedProgress";
+import { publicAsset } from "@/lib/public-asset";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { onDemoFill } from "@/lib/demo-data";
@@ -77,7 +78,7 @@ function FlagCarIcon() {
   return (
     <span className="relative inline-flex h-9 w-10 shrink-0" aria-hidden>
       <span className="absolute left-0 top-0 text-2xl leading-none">🏁</span>
-      <img src="/images/race/race-car.png" alt="" className="absolute bottom-0 right-0 h-4 w-auto" />
+      <img src={publicAsset("/images/race/race-car.png")} alt="" className="absolute bottom-0 right-0 h-4 w-auto" />
     </span>
   );
 }
@@ -294,7 +295,7 @@ export function RetroRacerView({
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] bg-white shadow-sm">
         <section className="race-scene relative min-h-[420px] flex-1 overflow-hidden" aria-label="Race track">
-          <div className="race-stage" style={{ backgroundImage: "url(/images/race/race-bg.jpg)" }}>
+          <div className="race-stage" style={{ backgroundImage: `url(${publicAsset("/images/race/race-bg.jpg")})` }}>
             {CHECKPOINTS.map((cp) => (
               <span
                 key={cp.label}
@@ -317,7 +318,7 @@ export function RetroRacerView({
             >
               <div key={boost} className={boost ? "race-boost" : ""}>
                 <img
-                  src="/images/race/race-car.png"
+                  src={publicAsset("/images/race/race-car.png")}
                   alt={`Retro racer at ${RACE_STAGE_NAMES[stage]}`}
                   className="block w-full"
                   style={{ transform: pose.facingLeft ? "scaleX(-1)" : undefined }}

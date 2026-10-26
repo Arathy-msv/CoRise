@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useTweened } from "@/components/campaign/CampaignGamifiedProgress";
+import { publicAsset } from "@/lib/public-asset";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { onDemoFill } from "@/lib/demo-data";
@@ -317,7 +318,7 @@ export function CozyPawsView({
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] bg-white shadow-sm">
         <section className="race-scene relative min-h-[420px] flex-1 overflow-hidden" aria-label="Animal sanctuary meadow">
-          <div className="race-stage" style={{ backgroundImage: "url(/images/shelter/shelter-bg.jpg)" }}>
+          <div className="race-stage" style={{ backgroundImage: `url(${publicAsset("/images/shelter/shelter-bg.jpg")})` }}>
             {visible.map((s) => (
               <div
                 key={s.id}

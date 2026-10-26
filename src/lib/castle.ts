@@ -1,3 +1,4 @@
+import { publicAsset } from "@/lib/public-asset";
 import type { ProgressStage } from "@/lib/progress";
 import type { CastlePrices } from "@/types/corise";
 
@@ -45,7 +46,7 @@ export const CASTLE_UNLOCK_MESSAGES: Record<ProgressStage, string> = {
 };
 
 /** One painted scene per construction stage, all from the same camera. */
-export const CASTLE_STAGE_IMAGES = [0, 1, 2, 3, 4].map((i) => `/images/castle/castle-stage${i}.jpg`);
+export const CASTLE_STAGE_IMAGES = [0, 1, 2, 3, 4].map((i) => publicAsset(`/images/castle/castle-stage${i}.jpg`));
 
 /**
  * Animal builders placed on the castle scenes, as percentages of the 16:9 scene.
@@ -62,8 +63,8 @@ export const CASTLE_BUILDERS: {
   w: number;
   flip?: boolean;
 }[] = [
-  { id: "bear", src: "/images/castle/builder-bear.png", label: "Bear builder carrying a stone", from: 0, to: 4, x: 40, y: 80, w: 7 },
-  { id: "bunny", src: "/images/castle/builder-bunny.png", label: "Bunny builder reading the blueprint", from: 0, to: 4, x: 50, y: 84, w: 6.5 },
-  { id: "mouse", src: "/images/castle/builder-mouse.png", label: "Mouse builder with a hammer", from: 1, to: 4, x: 80, y: 77, w: 5, flip: true },
-  { id: "mouse-top", src: "/images/castle/builder-mouse.png", label: "Mouse builder on the tower scaffolding", from: 2, to: 2, x: 70.5, y: 34.5, w: 3 },
+  { id: "bear", src: publicAsset("/images/castle/builder-bear.png"), label: "Bear builder carrying a stone", from: 0, to: 4, x: 40, y: 80, w: 7 },
+  { id: "bunny", src: publicAsset("/images/castle/builder-bunny.png"), label: "Bunny builder reading the blueprint", from: 0, to: 4, x: 50, y: 84, w: 6.5 },
+  { id: "mouse", src: publicAsset("/images/castle/builder-mouse.png"), label: "Mouse builder with a hammer", from: 1, to: 4, x: 80, y: 77, w: 5, flip: true },
+  { id: "mouse-top", src: publicAsset("/images/castle/builder-mouse.png"), label: "Mouse builder on the tower scaffolding", from: 2, to: 2, x: 70.5, y: 34.5, w: 3 },
 ];

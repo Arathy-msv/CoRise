@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useTweened } from "@/components/campaign/CampaignGamifiedProgress";
+import { publicAsset } from "@/lib/public-asset";
 import { GardenTree } from "@/components/garden/GardenTree";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
@@ -73,7 +74,7 @@ function FlyingCoin({
 
   return (
     <span ref={ref} aria-hidden className="garden-coin">
-      <img src="/images/garden/gold-coin.png" alt="" />
+      <img src={publicAsset("/images/garden/gold-coin.png")} alt="" />
       <span className="garden-suggested">
         +{formatUsd(amount)}
         <br />
@@ -308,7 +309,7 @@ export function GardenCampaignView({
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] bg-white shadow-sm">
         <section
           className="relative min-h-[420px] flex-1 bg-cover bg-center"
-          style={{ backgroundImage: "url(/images/garden/garden-bg.jpg)" }}
+          style={{ backgroundImage: `url(${publicAsset("/images/garden/garden-bg.jpg")})` }}
           aria-label="Our shared garden"
         >
           <div className="relative z-10 max-w-md p-6 sm:p-8">
@@ -342,7 +343,7 @@ export function GardenCampaignView({
             <GardenTree stage={stage} className="h-full w-full" />
             {sceneFx?.action === "water" ? (
               <div key={sceneFx.id} className="garden-water" aria-hidden>
-                <img src="/images/garden/watering-can.png" alt="" className="garden-can" />
+                <img src={publicAsset("/images/garden/watering-can.png")} alt="" className="garden-can" />
                 <span className="garden-drops">
                   {Array.from({ length: 7 }, (_, i) => (
                     <i key={i} style={{ animationDelay: `${i * 0.12}s`, left: `${46 + (i % 3) * 4}%` }} />
@@ -359,7 +360,7 @@ export function GardenCampaignView({
                   <path d="M110 20 C80 34 60 36 48 44" />
                   <path d="M110 20 C140 32 160 36 176 46" />
                 </svg>
-                <img src="/images/garden/fertilizer-scoop.png" alt="" className="garden-scoop" />
+                <img src={publicAsset("/images/garden/fertilizer-scoop.png")} alt="" className="garden-scoop" />
                 <span className="garden-pellets">
                   {Array.from({ length: 8 }, (_, i) => (
                     <i key={i} style={{ animationDelay: `${i * 0.08}s` }} />

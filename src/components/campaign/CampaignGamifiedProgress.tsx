@@ -6,6 +6,7 @@ import { formatGoalValue, progressPercent, stageFor, stageLabel, type ProgressSt
 import { SHELTER_SPRITES } from "@/lib/shelter";
 import { CAMPFIRE_SPRITES, FIRE_RING } from "@/lib/campfire";
 import { CASTLE_STAGE_IMAGES } from "@/lib/castle";
+import { publicAsset } from "@/lib/public-asset";
 
 type Props = {
   type: ProgressWidget;
@@ -541,7 +542,7 @@ function CakeScene({ stage }: { stage: ProgressStage }) {
 function ShelterScene({ stage }: { stage: ProgressStage }) {
   return (
     <>
-      <image href="/images/shelter/shelter-bg.jpg" x="0" y="0" width="320" height="180" preserveAspectRatio="xMidYMid slice" />
+      <image href={publicAsset("/images/shelter/shelter-bg.jpg")} x="0" y="0" width="320" height="180" preserveAspectRatio="xMidYMid slice" />
       {SHELTER_SPRITES.filter((s) => stage >= s.from).map((s) => {
         const w = (s.w / 100) * 320;
         return (
@@ -575,7 +576,7 @@ function CampfireScene({ stage }: { stage: ProgressStage }) {
   const fw = (FIRE_RING.w / 100) * 320 * (stage === 4 ? 1.25 : 1);
   return (
     <>
-      <image href="/images/campfire/campfire-bg.jpg" x="0" y="0" width="320" height="180" preserveAspectRatio="xMidYMid slice" />
+      <image href={publicAsset("/images/campfire/campfire-bg.jpg")} x="0" y="0" width="320" height="180" preserveAspectRatio="xMidYMid slice" />
       {CAMPFIRE_SPRITES.filter((s) => stage >= s.from).map((s) => {
         const w = (s.w / 100) * 320;
         return (
@@ -594,7 +595,7 @@ function CampfireScene({ stage }: { stage: ProgressStage }) {
       {stage >= 1 ? (
         <image
           className="gp-pop"
-          href="/images/campfire/camp-flame.png"
+          href={publicAsset("/images/campfire/camp-flame.png")}
           x={160 - fw / 2}
           y={(FIRE_RING.y / 100) * 180 - fw}
           width={fw}

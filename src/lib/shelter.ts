@@ -1,3 +1,4 @@
+import { publicAsset } from "@/lib/public-asset";
 import type { ProgressStage } from "@/lib/progress";
 import type { ShelterPrices } from "@/types/corise";
 
@@ -66,10 +67,10 @@ export const SHELTER_SPRITES: {
   w: number;
   pet: boolean;
 }[] = [
-  { id: "playyard", src: "/images/shelter/pet-playyard.png", label: "Fenced play yard with a dog house", from: 3, x: 13, y: 77, w: 17, pet: false },
-  { id: "puppy", src: "/images/shelter/pet-puppy-sleep.png", label: "Puppy asleep on a mat", from: 0, x: 34, y: 80, w: 12, pet: true },
-  { id: "bowls", src: "/images/shelter/pet-bowls.png", label: "Food and water bowls", from: 0, x: 47, y: 87, w: 8, pet: false },
-  { id: "kittens", src: "/images/shelter/pet-kittens.png", label: "Two kittens playing with yarn", from: 1, x: 59, y: 80, w: 13, pet: true },
-  { id: "matpals", src: "/images/shelter/pet-matpals.png", label: "Puppy and cat relaxing on fleece mats", from: 2, x: 77, y: 77, w: 15, pet: true },
-  { id: "dogs", src: "/images/shelter/pet-dogs.png", label: "Beagle and golden retriever", from: 2, x: 24, y: 91, w: 18, pet: true },
+  { id: "playyard", src: publicAsset("/images/shelter/pet-playyard.png"), label: "Fenced play yard with a dog house", from: 3, x: 13, y: 77, w: 17, pet: false },
+  { id: "puppy", src: publicAsset("/images/shelter/pet-puppy-sleep.png"), label: "Puppy asleep on a mat", from: 0, x: 34, y: 80, w: 12, pet: true },
+  { id: "bowls", src: publicAsset("/images/shelter/pet-bowls.png"), label: "Food and water bowls", from: 0, x: 47, y: 87, w: 8, pet: false },
+  { id: "kittens", src: publicAsset("/images/shelter/pet-kittens.png"), label: "Two kittens playing with yarn", from: 1, x: 59, y: 80, w: 13, pet: true },
+  { id: "matpals", src: publicAsset("/images/shelter/pet-matpals.png"), label: "Puppy and cat relaxing on fleece mats", from: 2, x: 77, y: 77, w: 15, pet: true },
+  { id: "dogs", src: publicAsset("/images/shelter/pet-dogs.png"), label: "Beagle and golden retriever", from: 2, x: 24, y: 91, w: 18, pet: true },
 ];

@@ -1,11 +1,12 @@
+import { publicAsset } from "@/lib/public-asset";
 import type { ProgressStage } from "@/lib/progress";
 
 const STAGE_SRC: Record<ProgressStage, string> = {
-  0: "/images/garden/plant-sprout.png",
-  1: "/images/garden/plant-sapling.png",
-  2: "/images/garden/plant-blossom.png",
-  3: "/images/garden/plant-fruit.png",
-  4: "/images/garden/plant-fruit.png",
+  0: publicAsset("/images/garden/plant-sprout.png"),
+  1: publicAsset("/images/garden/plant-sapling.png"),
+  2: publicAsset("/images/garden/plant-blossom.png"),
+  3: publicAsset("/images/garden/plant-fruit.png"),
+  4: publicAsset("/images/garden/plant-fruit.png"),
 };
 
 /** Painted plant for the shared garden. Swaps artwork as pledges reach each growth stage. */

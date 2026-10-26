@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useTweened } from "@/components/campaign/CampaignGamifiedProgress";
+import { publicAsset } from "@/lib/public-asset";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { onDemoFill } from "@/lib/demo-data";
@@ -323,7 +324,7 @@ export function CampfireView({
 
       <main className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-[22px] bg-white shadow-sm">
         <section className="race-scene relative min-h-[420px] flex-1 overflow-hidden bg-[#0b1430]" aria-label="Campfire clearing at night">
-          <div className="race-stage" data-stage={stage} style={{ backgroundImage: "url(/images/campfire/campfire-bg.jpg)" }}>
+          <div className="race-stage" data-stage={stage} style={{ backgroundImage: `url(${publicAsset("/images/campfire/campfire-bg.jpg")})` }}>
             <div className="campfire-dark" style={{ opacity: [0.35, 0.18, 0.06, 0, 0][stage] }} aria-hidden />
             {stage >= 1 ? (
               <div
@@ -412,7 +413,7 @@ export function CampfireView({
             >
               <div key={flare} className={flare ? "campfire-flare" : ""}>
                 {stage >= 1 ? (
-                  <img src="/images/campfire/camp-flame.png" alt={stage === 4 ? "Blazing campfire" : "Crackling campfire"} className="campfire-flicker block w-full" />
+                  <img src={publicAsset("/images/campfire/camp-flame.png")} alt={stage === 4 ? "Blazing campfire" : "Crackling campfire"} className="campfire-flicker block w-full" />
                 ) : (
                   <span className="sr-only">Unlit fire ring</span>
                 )}

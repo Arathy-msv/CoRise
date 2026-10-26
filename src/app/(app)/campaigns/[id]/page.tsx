@@ -1,4 +1,9 @@
 import CampaignDetailClient from "./CampaignDetailClient";
+import { campaignIdStaticParams } from "@/lib/static-params";
+
+export function generateStaticParams() {
+  return campaignIdStaticParams();
+}
 
 export default async function CampaignDetailPage({
   params,

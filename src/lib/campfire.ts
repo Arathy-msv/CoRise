@@ -1,3 +1,4 @@
+import { publicAsset } from "@/lib/public-asset";
 import type { ProgressStage } from "@/lib/progress";
 import type { CampfirePrices } from "@/types/corise";
 
@@ -58,12 +59,12 @@ export const CAMPFIRE_SPRITES: {
   w: number;
   flip?: boolean;
 }[] = [
-  { id: "crate", src: "/images/campfire/camp-crate.png", label: "Wooden supply crate", from: 0, x: 71, y: 80, w: 6 },
-  { id: "tent-left", src: "/images/campfire/camp-tent.png", label: "Glowing canvas tent", from: 1, x: 20, y: 76, w: 20 },
-  { id: "tent-mid", src: "/images/campfire/camp-tent.png", label: "Glowing canvas tent", from: 2, x: 35, y: 70, w: 14, flip: true },
-  { id: "belltent", src: "/images/campfire/camp-belltent.png", label: "Lit bell tent", from: 2, x: 79, y: 74, w: 21 },
-  { id: "log-right", src: "/images/campfire/camp-log.png", label: "Log seat", from: 2, x: 62, y: 76, w: 10 },
-  { id: "log-left", src: "/images/campfire/camp-log.png", label: "Log seat", from: 2, x: 38, y: 86, w: 10, flip: true },
+  { id: "crate", src: publicAsset("/images/campfire/camp-crate.png"), label: "Wooden supply crate", from: 0, x: 71, y: 80, w: 6 },
+  { id: "tent-left", src: publicAsset("/images/campfire/camp-tent.png"), label: "Glowing canvas tent", from: 1, x: 20, y: 76, w: 20 },
+  { id: "tent-mid", src: publicAsset("/images/campfire/camp-tent.png"), label: "Glowing canvas tent", from: 2, x: 35, y: 70, w: 14, flip: true },
+  { id: "belltent", src: publicAsset("/images/campfire/camp-belltent.png"), label: "Lit bell tent", from: 2, x: 79, y: 74, w: 21 },
+  { id: "log-right", src: publicAsset("/images/campfire/camp-log.png"), label: "Log seat", from: 2, x: 62, y: 76, w: 10 },
+  { id: "log-left", src: publicAsset("/images/campfire/camp-log.png"), label: "Log seat", from: 2, x: 38, y: 86, w: 10, flip: true },
 ];
 
 /** Fire ring position in campfire-bg.jpg. */
