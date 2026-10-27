@@ -9,6 +9,7 @@ import {
   buildPersonalizedShareUrl,
   buildShareMessage,
 } from "@/lib/endorsement";
+import { withBasePath } from "@/lib/public-asset";
 
 const noop = () => () => undefined;
 
@@ -25,7 +26,7 @@ export function PersonalizedShareModal({
   const origin = useSyncExternalStore(noop, () => window.location.origin, () => "");
   const [note, setNote] = useState(DEFAULT_SHARE_NOTE);
   const [copied, setCopied] = useState(false);
-  const link = buildPersonalizedShareUrl(origin, path, "", note);
+  const link = buildPersonalizedShareUrl(origin, withBasePath(path), "", note);
   const message = buildShareMessage("", note, link);
   const encodedLink = encodeURIComponent(link);
   const selectedId = SHARE_NOTE_PRESETS.find((preset) => preset.note === note)?.id;

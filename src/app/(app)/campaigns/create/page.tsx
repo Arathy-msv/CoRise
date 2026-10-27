@@ -11,6 +11,7 @@ import { useCorise } from "@/context/CoriseContext";
 import { buildCampaignFromPrompt, IDEA_EXAMPLE } from "@/lib/suggestions";
 import { formatInr } from "@/lib/format";
 import { publicCampaignPath, publicOrgPath } from "@/lib/paths";
+import { openAppPath } from "@/lib/static-nav";
 import type { ThemePreset } from "@/types/corise";
 
 type Phase = "create" | "review" | "done";
@@ -77,11 +78,11 @@ export default function CreateCampaignPage() {
           </div>
         ) : null}
         <div className="flex flex-wrap justify-center gap-2 pt-1">
-          <Button variant="secondary" onClick={() => camp && router.push(`/campaigns/${camp.id}`)}>
+          <Button variant="secondary" onClick={() => camp && openAppPath(`/campaigns/${camp.id}`, router)}>
             Manage campaign
           </Button>
           {state.website?.status === "published" ? (
-            <Button variant="ghost" onClick={() => router.push(publicOrgPath(state.organization.orgSlug))}>
+            <Button variant="ghost" onClick={() => openAppPath(publicOrgPath(state.organization.orgSlug), router)}>
               View organization website
             </Button>
           ) : null}

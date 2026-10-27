@@ -11,6 +11,7 @@ import { Icon } from "@/components/ui/Icon";
 import { useCorise } from "@/context/CoriseContext";
 import { onDemoFill } from "@/lib/demo-data";
 import { newCampaignPath, orgDashboardPath, publicCampaignPath } from "@/lib/paths";
+import { openAppPath } from "@/lib/static-nav";
 import { DEFAULT_CARE_PRICES } from "@/lib/garden";
 import {
   formatGoalValue,
@@ -137,7 +138,7 @@ export default function NewOrgCampaignPage({ params }: { params: Promise<{ slug:
 
   const wrongOrg = hydrated && slug !== org.orgSlug;
   useEffect(() => {
-    if (wrongOrg) router.replace(newCampaignPath(org.orgSlug));
+    if (wrongOrg) openAppPath(newCampaignPath(org.orgSlug), router, "replace");
   }, [wrongOrg, org.orgSlug, router]);
 
   useEffect(

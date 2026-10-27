@@ -5,12 +5,9 @@ import { PasswordField } from "@/components/auth/PasswordField";
 import { CopyTextButton } from "@/components/ui/CopyTextButton";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
+import { absoluteUrl, withBasePath } from "@/lib/public-asset";
 import { orgAdminLoginPath, publicOrgPath } from "@/lib/paths";
 import type { DirectoryOrganization, OrgLicenseStatus } from "@/lib/deployment";
-
-function absoluteUrl(path: string, origin: string): string {
-  return origin ? `${origin}${path}` : path;
-}
 
 function Line({ label, value }: { label: string; value: string }) {
   return (
@@ -120,11 +117,11 @@ export function OrgAccessDialog({
         )}
 
         <div className="flex flex-wrap gap-2 border-t border-[var(--color-border)] pt-3">
-          <a className="corise-btn corise-btn-secondary corise-btn-sm" href={publicOrgPath(org.slug)} target="_blank" rel="noreferrer">
+          <a className="corise-btn corise-btn-secondary corise-btn-sm" href={withBasePath(publicOrgPath(org.slug))} target="_blank" rel="noreferrer">
             View Public Website
           </a>
           {org.provisioned ? (
-            <a className="corise-btn corise-btn-secondary corise-btn-sm" href={orgAdminLoginPath(org.slug)} target="_blank" rel="noreferrer">
+            <a className="corise-btn corise-btn-secondary corise-btn-sm" href={withBasePath(orgAdminLoginPath(org.slug))} target="_blank" rel="noreferrer">
               Open Admin Login
             </a>
           ) : null}

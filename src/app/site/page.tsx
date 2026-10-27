@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense } from "react";
 import { useCorise } from "@/context/CoriseContext";
 import { publicOrgPath } from "@/lib/paths";
+import { openAppPath } from "@/lib/static-nav";
 
 function SiteRedirectInner() {
   const { state, hydrated } = useCorise();
@@ -14,7 +15,7 @@ function SiteRedirectInner() {
   useEffect(() => {
     if (!hydrated) return;
     const preview = search.get("preview") === "1" ? { preview: true } : undefined;
-    router.replace(publicOrgPath(state.organization.orgSlug, preview));
+    openAppPath(publicOrgPath(state.organization.orgSlug, preview), router, "replace");
   }, [hydrated, state.organization.orgSlug, router, search]);
 
   return (

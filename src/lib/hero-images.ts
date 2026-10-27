@@ -3,7 +3,7 @@ import { publicAsset } from "@/lib/public-asset";
 /**
  * Cover photos bundled with the app (generated illustrative photography in /public/images/heroes).
  * Campaigns and websites store only the key, so swapping the asset never touches saved data.
- * `next/image` does not add `basePath` to string sources, so paths go through `publicAsset`.
+ * Raw img tags do not add `basePath`, so paths go through `publicAsset`.
  */
 export const HERO_IMAGES = {
   trees: { label: "Tree planting", src: publicAsset("/images/heroes/trees.jpg") },

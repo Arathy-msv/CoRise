@@ -3,6 +3,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { openAppPath } from "@/lib/static-nav";
 import { Logo } from "@/components/brand/Logo";
 import { LicenseKeyModal } from "@/components/deployment/DeploymentControls";
 import { Icon } from "@/components/ui/Icon";
@@ -64,7 +65,7 @@ export function RolePicker({ edition }: { edition: DeploymentMode }) {
     setMode(edition);
     setRole(role);
     signIn({ userName: person.person, email: person.email });
-    router.push(appHomePath(edition, role, state.organization.orgSlug));
+    openAppPath(appHomePath(edition, role, state.organization.orgSlug), router);
   };
 
   return (

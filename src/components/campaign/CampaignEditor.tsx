@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/Button";
 import { Field, TextArea, TextInput } from "@/components/ui/Field";
@@ -159,7 +158,7 @@ export function CampaignEditor({
                     selected ? "ring-2 ring-[var(--color-primary)] ring-offset-2" : "opacity-80 hover:opacity-100"
                   }`}
                 >
-                  <Image src={HERO_IMAGES[key].src} alt="" fill sizes="110px" className="object-cover" />
+                  <img src={HERO_IMAGES[key].src} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 </button>
               );
             })}

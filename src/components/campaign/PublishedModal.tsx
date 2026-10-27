@@ -1,10 +1,12 @@
 "use client";
 
 import { useSyncExternalStore } from "react";
+import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
 import { CopyLinkButton } from "@/components/ui/CopyLinkButton";
 import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
+import { absoluteUrl } from "@/lib/public-asset";
 
 const noop = () => () => undefined;
 
@@ -36,7 +38,7 @@ export function PublishedModal({
   websiteLive?: boolean;
 }) {
   const origin = useSyncExternalStore(noop, () => window.location.origin, () => "");
-  const url = `${origin}${path}`;
+  const url = origin ? absoluteUrl(path, origin) : path;
   const website = kind === "website";
 
   return (
@@ -89,9 +91,9 @@ export function PublishedModal({
         {!website && !websiteLive ? (
           <p className="rounded-xl bg-[var(--color-primary-soft)] p-3 text-xs font-medium text-[var(--color-primary)]">
             This link won&apos;t work for supporters yet — publish your organization website from{" "}
-            <a href="/website" className="underline">
+            <Link href="/website" className="underline">
               My Website
-            </a>{" "}
+            </Link>{" "}
             to go public.
           </p>
         ) : null}

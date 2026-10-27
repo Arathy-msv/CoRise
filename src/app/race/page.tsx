@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCorise } from "@/context/CoriseContext";
 import { publicCampaignPath } from "@/lib/paths";
+import { openAppPath } from "@/lib/static-nav";
 import { YOUTH_GRAND_PRIX_SLUG } from "@/lib/storage";
 
 export default function RacePage() {
@@ -12,7 +13,7 @@ export default function RacePage() {
 
   useEffect(() => {
     if (!hydrated) return;
-    router.replace(publicCampaignPath(YOUTH_GRAND_PRIX_SLUG, state.organization.orgSlug));
+    openAppPath(publicCampaignPath(YOUTH_GRAND_PRIX_SLUG, state.organization.orgSlug), router, "replace");
   }, [hydrated, router, state.organization.orgSlug]);
 
   return <p className="py-20 text-center text-sm text-[var(--color-text-muted)]">Opening the race…</p>;

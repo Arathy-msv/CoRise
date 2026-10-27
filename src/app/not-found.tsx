@@ -9,22 +9,14 @@ import CampaignDetailClient from "@/app/(app)/campaigns/[id]/CampaignDetailClien
 import OverviewPage from "@/app/(app)/overview/page";
 import OrgSitePage from "@/app/org/[slug]/OrgSiteClient";
 import NewOrgCampaignPage from "@/app/org/[slug]/campaigns/new/NewOrgCampaignClient";
-
-const BASE_PATH = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
-
-function appPath(pathname: string): string {
-  let path = pathname || "/";
-  if (BASE_PATH && path.startsWith(BASE_PATH)) path = path.slice(BASE_PATH.length) || "/";
-  if (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
-  return path;
-}
+import { stripBasePath } from "@/lib/public-asset";
 
 /** GitHub Pages has no server, so unknown campaign links load this page and render from the URL. */
 export default function NotFound() {
   const [path, setPath] = useState<string | null>(null);
 
   useEffect(() => {
-    const sync = () => setPath(appPath(window.location.pathname));
+    const sync = () => setPath(stripBasePath(window.location.pathname));
     sync();
     window.addEventListener("popstate", sync);
     return () => window.removeEventListener("popstate", sync);
