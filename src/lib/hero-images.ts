@@ -1,14 +1,17 @@
+import { publicAsset } from "@/lib/public-asset";
+
 /**
  * Cover photos bundled with the app (generated illustrative photography in /public/images/heroes).
  * Campaigns and websites store only the key, so swapping the asset never touches saved data.
+ * `next/image` does not add `basePath` to string sources, so paths go through `publicAsset`.
  */
 export const HERO_IMAGES = {
-  trees: { label: "Tree planting", src: "/images/heroes/trees.jpg" },
-  cleanup: { label: "Clean-up", src: "/images/heroes/cleanup.jpg" },
-  library: { label: "Books & learning", src: "/images/heroes/library.jpg" },
-  care: { label: "Care packages", src: "/images/heroes/care.jpg" },
-  bags: { label: "Reuse & swap", src: "/images/heroes/bags.jpg" },
-  community: { label: "Community gathering", src: "/images/heroes/community.jpg" },
+  trees: { label: "Tree planting", src: publicAsset("/images/heroes/trees.jpg") },
+  cleanup: { label: "Clean-up", src: publicAsset("/images/heroes/cleanup.jpg") },
+  library: { label: "Books & learning", src: publicAsset("/images/heroes/library.jpg") },
+  care: { label: "Care packages", src: publicAsset("/images/heroes/care.jpg") },
+  bags: { label: "Reuse & swap", src: publicAsset("/images/heroes/bags.jpg") },
+  community: { label: "Community gathering", src: publicAsset("/images/heroes/community.jpg") },
 } as const;
 
 export type HeroImageKey = keyof typeof HERO_IMAGES;

@@ -6,6 +6,7 @@ import PublicCampaignClient from "@/components/campaign/PublicCampaignClient";
 import { AppShell } from "@/components/layout/AppShell";
 import { RequireAuth } from "@/components/layout/RequireAuth";
 import CampaignDetailClient from "@/app/(app)/campaigns/[id]/CampaignDetailClient";
+import OverviewPage from "@/app/(app)/overview/page";
 import OrgSitePage from "@/app/org/[slug]/OrgSiteClient";
 import NewOrgCampaignPage from "@/app/org/[slug]/campaigns/new/NewOrgCampaignClient";
 
@@ -54,6 +55,16 @@ export default function NotFound() {
       <RequireAuth>
         <AppShell>
           <NewOrgCampaignPage params={Promise.resolve({ slug: created[1] })} />
+        </AppShell>
+      </RequireAuth>
+    );
+  }
+
+  if (/^\/dashboard\/[^/]+$/.test(path)) {
+    return (
+      <RequireAuth>
+        <AppShell>
+          <OverviewPage />
         </AppShell>
       </RequireAuth>
     );

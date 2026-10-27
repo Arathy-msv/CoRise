@@ -145,7 +145,7 @@ export default function OverviewPage() {
   useEffect(() => {
     if (!hydrated || !orgSlug) return;
     const expected = orgDashboardPath(orgSlug);
-    if (pathname !== expected) router.replace(expected);
+    if (pathname.replace(/\/+$/, "") !== expected) router.replace(expected);
   }, [hydrated, orgSlug, pathname, router]);
 
   if (!hydrated) {
