@@ -45,8 +45,8 @@ function OrgHeader({ state, hideCreate = false }: { state: CoriseDemoState; hide
       className="flex flex-col gap-4 rounded-2xl bg-[var(--color-navy)] p-6 text-white sm:flex-row sm:items-center sm:justify-between"
     >
       <div className="min-w-0">
-        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-navy-muted)]">Organization workspace</p>
-        <p className="mt-1 truncate text-xl font-semibold">{org.name}</p>
+        <p className="text-xs font-semibold uppercase tracking-wide text-[var(--color-navy-muted)]">Organization dashboard</p>
+        <h1 className="mt-1 truncate text-2xl font-semibold">{org.name}</h1>
         {siteLive ? (
           <Link
             href={publicOrgPath(org.orgSlug)}
@@ -152,7 +152,7 @@ export default function OverviewPage() {
         {!websiteLive ? <PublishWebsiteBanner canCreate={canCreate} /> : null}
         <div className="py-8 text-center" data-empty-campaigns>
           <p className="text-sm font-medium text-[var(--color-text-muted)]">Welcome to {state.organization.name}</p>
-          <h1 className="mt-2 text-[28px] font-semibold">You haven&apos;t created any campaigns yet.</h1>
+          <h2 className="mt-2 text-[28px] font-semibold">You haven&apos;t created any campaigns yet.</h2>
           {websiteLive ? (
             <p className="mx-auto mt-2 max-w-md text-[15px] text-[var(--color-text-muted)]">
               Your organization website is ready. You can now create your first campaign whenever you&apos;re ready.
@@ -202,7 +202,7 @@ export default function OverviewPage() {
             {live ? <Badge tone="success">Live</Badge> : <Badge>Draft</Badge>}
             <span className="text-xs text-[var(--color-text-muted)]">Updated {relativeTime(campaignUpdatedAt(active))}</span>
           </div>
-          <h1 className="mt-1.5 text-[28px] font-semibold leading-tight sm:text-[32px]">{page.title}</h1>
+          <h2 className="mt-1.5 text-[28px] font-semibold leading-tight sm:text-[32px]">{page.title}</h2>
           {live ? (
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <CopyLinkButton path={path} label="Copy public link" />

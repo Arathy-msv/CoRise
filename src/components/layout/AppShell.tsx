@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Logo } from "@/components/brand/Logo";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { ToastHost } from "@/components/ui/Toast";
@@ -42,8 +42,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const [moreOpen, setMoreOpen] = useState(inMore);
   const close = () => setOpen(false);
 
+  const orgName = state.organization.name;
   const createHref = newCampaignPath(state.organization.orgSlug);
   const creating = pathname === createHref;
+
+  useEffect(() => {
+    const previous = document.title;
+    document.title = orgName ? `${orgName} · Corise` : previous;
+    return () => {
+      document.title = previous;
+    };
+  }, [orgName]);
 
   const primaryNav: NavItem[] = [
     { href: "/overview", label: "Dashboard", icon: "home", match: ["/dashboard"] },
@@ -135,9 +144,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-2 border-b border-[var(--color-border)] bg-white/95 px-4 backdrop-blur md:hidden">
-          <Logo size="sm" />
-          <div className="flex items-center gap-2">
+        <header className="sticky top-0 z-20 flex h-14 items-center justify-between gap-3 border-b border-[var(--color-border)] bg-white/95 px-4 backdrop-blur md:px-8">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="md:hidden">
+              <Logo size="sm" />
+            </span>
+            <p className="min-w-0 truncate text-sm font-semibold" data-org-name={orgName}>
+              {orgName}
+            </p>
+          </div>
+          <div className="flex shrink-0 items-center gap-2 md:hidden">
             <ProfileMenu tone="light" />
             <button
               type="button"

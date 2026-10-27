@@ -7,7 +7,9 @@ import { OrgAccessDialog } from "@/components/admin/OrgAccessDialog";
 import { Logo } from "@/components/brand/Logo";
 import { ModeSwitcher, RoleSwitcher } from "@/components/deployment/DeploymentControls";
 import { ProfileMenu } from "@/components/profile/ProfileMenu";
+import { ButtonLink } from "@/components/ui/Button";
 import { CopyTextButton } from "@/components/ui/CopyTextButton";
+import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { canAccessPlatformAdmin, orgColor, orgInitials, platformStats, roleLabel, type DirectoryOrganization, type OrgLicenseStatus } from "@/lib/deployment";
 import { resetOrgPassword, setOrgLicenseStatus } from "@/lib/org-access";
@@ -138,11 +140,17 @@ export default function PlatformAdminPage() {
       </header>
 
       <main className="mx-auto max-w-6xl space-y-8 px-4 py-8 md:px-6">
-        <div>
-          <h1 className="text-[28px] font-semibold tracking-tight">Platform admin</h1>
-          <p className="mt-1 max-w-2xl text-sm text-[var(--color-text-muted)]">
-            Every organization website on Corise Cloud. New organizations start with no campaigns. Figures are saved in this browser.
-          </p>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div>
+            <h1 className="text-[28px] font-semibold tracking-tight">Platform admin</h1>
+            <p className="mt-1 max-w-2xl text-sm text-[var(--color-text-muted)]">
+              Every organization website on Corise Cloud. New organizations start with no campaigns. Figures are saved in this browser.
+            </p>
+          </div>
+          <ButtonLink href="/create" size="lg" className="shrink-0">
+            <Icon name="plus" />
+            Create organization
+          </ButtonLink>
         </div>
 
         <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" aria-label="Platform summary">
