@@ -21,7 +21,7 @@ import {
   type CareActionId,
   type CareCart,
 } from "@/lib/garden";
-import { formatUsd, parsePledge, progressPercent, stageFor } from "@/lib/progress";
+import { formatUsd, parsePledge, progressPercent, stageFor, takePledge } from "@/lib/progress";
 
 type Coin = { id: number; from: DOMRect; amount: number };
 type Sparkle = { id: number; x: number; y: number };
@@ -128,7 +128,7 @@ export function GardenCampaignView({
   organizationName: string;
   current: number;
   target: number;
-  onPledge: (amount: number) => void;
+  onPledge: (amount: number) => number | false;
   prices?: Partial<CarePrices>;
   /** Present when launched from the campaign details page — returns there. */
   onBack?: () => void;
@@ -233,8 +233,12 @@ export function GardenCampaignView({
       setAmountError(parsed.error);
       return;
     }
-    onPledge(parsed.amount);
-    setThanks(parsed.amount);
+    const taken = takePledge(parsed.amount, onPledge);
+    if (!taken.ok) {
+      setAmountError(taken.error);
+      return;
+    }
+    setThanks(taken.accepted);
     setCart(EMPTY_CART);
     setCheckout(false);
   };

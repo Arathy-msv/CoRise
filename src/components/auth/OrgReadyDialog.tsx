@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import Link from "next/link";
 import { Icon } from "@/components/ui/Icon";
-import type { ProvisionSuccess } from "@/lib/org-access";
+import { saveOrgLoginHint, type ProvisionSuccess } from "@/lib/org-access";
 import { publicAsset } from "@/lib/public-asset";
 
 function absoluteUrl(path: string, origin: string): string {
@@ -131,13 +131,14 @@ export function OrgReadyDialog({ result, onClose }: { result: ProvisionSuccess; 
               rel="noreferrer"
               className="flex flex-1 items-center justify-center rounded-xl border border-gray-300 bg-white py-2.5 text-center text-xs font-semibold text-gray-800 hover:bg-gray-50 focus-visible:outline-2 focus-visible:outline-[#183B2E]"
             >
-              Open Live Website ↗
+              Open public Website ↗
             </Link>
             <Link
               href={result.adminPath}
+              onClick={() => saveOrgLoginHint({ slug: result.slug, email: result.email, password: result.password })}
               className="flex flex-1 items-center justify-center rounded-xl bg-[#183B2E] py-2.5 text-center text-xs font-semibold text-white hover:bg-[#122D23] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B2E]"
             >
-              Go to My Dashboard
+              Go to Admin Dashboard
             </Link>
           </div>
         </section>

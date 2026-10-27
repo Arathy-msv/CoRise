@@ -6,7 +6,7 @@ import { publicAsset } from "@/lib/public-asset";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { onDemoFill } from "@/lib/demo-data";
-import { formatUsd, parsePledge, progressPercent, stageFor } from "@/lib/progress";
+import { formatUsd, parsePledge, progressPercent, stageFor, takePledge } from "@/lib/progress";
 import {
   DEMO_PET_ACTIONS,
   EMPTY_PET_CART,
@@ -122,7 +122,7 @@ export function CozyPawsView({
   current: number;
   target: number;
   prices?: Partial<ShelterPrices>;
-  onPledge: (amount: number) => void;
+  onPledge: (amount: number) => number | false;
   /** Present when launched from the campaign details page — returns there. */
   onBack?: () => void;
   /** Present when the campaign offers both views — lets supporters switch to the plain Direct Pay form. */
@@ -241,8 +241,12 @@ export function CozyPawsView({
       setAmountError(parsed.error);
       return;
     }
-    onPledge(parsed.amount);
-    setThanks(parsed.amount);
+    const taken = takePledge(parsed.amount, onPledge);
+    if (!taken.ok) {
+      setAmountError(taken.error);
+      return;
+    }
+    setThanks(taken.accepted);
     setCart(EMPTY_PET_CART);
     setCheckout(false);
   };

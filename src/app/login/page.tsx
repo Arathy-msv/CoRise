@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, TextInput } from "@/components/ui/Field";
 import { useApp } from "@/context/AppContext";
 import { useCorise } from "@/context/CoriseContext";
-import { activateOrgAdminRole, authenticateOrgAdmin } from "@/lib/org-access";
+import { activateOrgAdminRole, authenticateOrgAdmin, readOrgLoginHint, type OrgLoginHint } from "@/lib/org-access";
 import { orgDashboardPath } from "@/lib/paths";
 import { openAppPath } from "@/lib/static-nav";
 
@@ -28,9 +28,18 @@ function LoginInner() {
   const listed = orgSlug ? organizations.find((org) => org.slug === orgSlug) : undefined;
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [hint, setHint] = useState<OrgLoginHint | null>(null);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const notice = noticeMessage(search.get("notice"));
+
+  useEffect(() => {
+    const saved = readOrgLoginHint(orgSlug);
+    if (!saved) return;
+    setHint(saved);
+    setEmail(saved.email);
+    setPassword(saved.password);
+  }, [orgSlug]);
 
   useEffect(() => {
     if (!hydrated || !state.isSignedIn || !state.sessionOrgId) return;
@@ -83,6 +92,22 @@ function LoginInner() {
         <p role="status" className="rounded-lg bg-[var(--color-bg)] px-3 py-2 text-sm text-[var(--color-text)]">
           {notice}
         </p>
+      ) : null}
+
+      {hint ? (
+        <button
+          type="button"
+          onClick={() => {
+            setEmail(hint.email);
+            setPassword(hint.password);
+            setError("");
+          }}
+          className="w-full rounded-xl border border-[var(--color-border)] bg-[var(--color-primary-soft)] px-4 py-3 text-left focus-visible:outline-2 focus-visible:outline-[var(--color-primary)]"
+        >
+          <span className="block text-base font-semibold text-[var(--color-text)]">Organization admin</span>
+          <span className="mt-1 block text-sm text-[var(--color-text)]">{hint.email}</span>
+          <span className="mt-1 block text-sm font-semibold text-[var(--color-primary)]">Click to fill email and password</span>
+        </button>
       ) : null}
 
       <form id="login-form" onSubmit={(e) => void submit(e)} noValidate className="space-y-4">

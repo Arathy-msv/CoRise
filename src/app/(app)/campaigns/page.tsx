@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { HeroVisual } from "@/components/campaign/HeroVisual";
-import { StatusBadge } from "@/components/ui/Badge";
+import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { CopyLinkButton } from "@/components/ui/CopyLinkButton";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -15,6 +15,7 @@ import { canCreateWebsite } from "@/lib/deployment";
 import { relativeTime } from "@/lib/format";
 import { campaignDraftView, campaignPublishState, campaignUpdatedAt } from "@/lib/impact-space/publish";
 import { newCampaignPath, publicCampaignPath } from "@/lib/paths";
+import { isCampaignClosed } from "@/lib/progress";
 import type { Campaign } from "@/types/corise";
 
 type CardMsg = { ok: boolean; text: string };
@@ -131,7 +132,7 @@ export default function CampaignsPage() {
                 </Link>
                 <div className="flex flex-1 flex-col gap-2 p-4">
                   <div className="flex flex-wrap items-center gap-1.5">
-                    <StatusBadge state={s} />
+                    {isCampaignClosed(c) ? <Badge>Closed</Badge> : <StatusBadge state={s} />}
                     {c.featureOnWebsite && s !== "archived" && s !== "draft" ? (
                       <span className="inline-flex items-center gap-1 rounded-full bg-[var(--color-bg)] px-2 py-0.5 text-[11px] font-medium text-[var(--color-text-muted)]">
                         <Icon name="globe" size={12} />

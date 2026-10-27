@@ -2,7 +2,7 @@
 
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/Button";
-import { formatUsd, parsePledge, progressPercent } from "@/lib/progress";
+import { formatUsd, parsePledge, progressPercent, takePledge } from "@/lib/progress";
 
 const QUICK_AMOUNTS = [25, 50, 100, 250];
 
@@ -22,7 +22,7 @@ export function DirectPayView({
   description: string;
   current: number;
   target: number;
-  onPledge: (amount: number) => void;
+  onPledge: (amount: number) => number | false;
   /** Present when launched from the campaign details page — returns there. */
   onBack?: () => void;
   playToggle?: { onSwitch: () => void; label?: string };
@@ -40,8 +40,12 @@ export function DirectPayView({
       setError(parsed.error);
       return;
     }
-    onPledge(parsed.amount);
-    setThanks(parsed.amount);
+    const taken = takePledge(parsed.amount, onPledge);
+    if (!taken.ok) {
+      setError(taken.error);
+      return;
+    }
+    setThanks(taken.accepted);
     setAmount("");
     setError("");
   };

@@ -13,6 +13,7 @@ import {
   type DirectoryOrganization,
 } from "@/lib/deployment";
 import { ORG_DIRECTORY_EVENT } from "@/lib/org-access";
+import { isCampaignClosed } from "@/lib/progress";
 
 interface AppState {
   version: 1;
@@ -112,7 +113,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   const { state: cs, hydrated: coriseHydrated } = corise;
   const ownOrg = cs.organization;
-  const publishedCampaigns = cs.campaigns.filter((c) => c.status === "published" && !c.archived && !c.isSample).length;
+  const publishedCampaigns = cs.campaigns.filter((c) => c.status === "published" && !c.archived && !c.isSample && !isCampaignClosed(c)).length;
   const ownIsLive = cs.isSignedIn && (cs.website?.status === "published" || publishedCampaigns > 0);
 
   useEffect(() => {

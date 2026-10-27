@@ -114,6 +114,33 @@ export function campaignProgress(c: Campaign): CampaignProgress | null {
   return { goalType: c.goalType, current, target: c.goalTarget, widget: c.progressWidget ?? "none" };
 }
 
+/** A campaign with a goal is closed once that goal is reached. Fundraising stops there. */
+export function isCampaignClosed(campaign: Campaign): boolean {
+  const progress = campaignProgress(campaign);
+  return Boolean(progress && progress.current >= progress.target);
+}
+
+export const CAMPAIGN_CLOSED_MESSAGE = "This campaign is closed. It reached its goal, so fundraising has stopped.";
+
+/** Dollars still allowed. Returns 0 when fundraising has stopped. The last pledge is capped at the remaining goal. */
+export function acceptedPledge(campaign: Campaign, amount: number): number {
+  if (!Number.isInteger(amount) || amount <= 0 || amount > MAX_PLEDGE) return 0;
+  const progress = campaignProgress(campaign);
+  if (!progress || progress.goalType !== "amount") return isCampaignClosed(campaign) ? 0 : amount;
+  const remaining = progress.target - progress.current;
+  if (remaining <= 0) return 0;
+  return Math.min(amount, remaining);
+}
+
+export function takePledge(
+  amount: number,
+  onPledge: (amount: number) => number | false,
+): { ok: true; accepted: number } | { ok: false; error: string } {
+  const accepted = onPledge(amount);
+  if (accepted === false || accepted <= 0) return { ok: false, error: CAMPAIGN_CLOSED_MESSAGE };
+  return { ok: true, accepted };
+}
+
 export const MAX_GOAL = 10_000_000;
 export const MAX_PLEDGE = 1_000_000;
 

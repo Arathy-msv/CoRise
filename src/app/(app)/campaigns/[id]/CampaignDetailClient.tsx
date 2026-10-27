@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 import { CampaignPreview } from "@/components/impact-space/CampaignPreview";
-import { StatusBadge } from "@/components/ui/Badge";
+import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
@@ -13,7 +13,7 @@ import { useCorise } from "@/context/CoriseContext";
 import { relativeTime } from "@/lib/format";
 import { campaignDraftView, campaignPublishState, campaignUpdatedAt } from "@/lib/impact-space/publish";
 import { publicCampaignPath } from "@/lib/paths";
-import { campaignProgress } from "@/lib/progress";
+import { campaignProgress, isCampaignClosed } from "@/lib/progress";
 
 type Callout = { tone: "success" | "error"; text: string };
 
@@ -80,7 +80,7 @@ export default function CampaignDetailClient({ id }: { id: string }) {
         title={view.title}
         meta={
           <>
-            <StatusBadge state={s} />
+            {isCampaignClosed(campaign) ? <Badge>Closed</Badge> : <StatusBadge state={s} />}
             {campaign.featureOnWebsite && isLive ? (
               <span className="inline-flex items-center gap-1 text-xs text-[var(--color-text-muted)]">
                 <Icon name="globe" size={12} />
