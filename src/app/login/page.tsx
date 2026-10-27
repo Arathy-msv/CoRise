@@ -11,6 +11,7 @@ import { useApp } from "@/context/AppContext";
 import { useCorise } from "@/context/CoriseContext";
 import { activateOrgAdminRole, authenticateOrgAdmin } from "@/lib/org-access";
 import { orgDashboardPath } from "@/lib/paths";
+import { openAppPath } from "@/lib/static-nav";
 
 function noticeMessage(notice: string | null): string {
   if (notice === "expired") return "This organization's license has expired. Ask your Corise administrator to renew it.";
@@ -33,7 +34,7 @@ function LoginInner() {
 
   useEffect(() => {
     if (!hydrated || !state.isSignedIn || !state.sessionOrgId) return;
-    if (!orgSlug || state.organization.orgSlug === orgSlug) router.replace(orgDashboardPath(state.organization.orgSlug));
+    if (!orgSlug || state.organization.orgSlug === orgSlug) openAppPath(orgDashboardPath(state.organization.orgSlug), router, "replace");
   }, [hydrated, state.isSignedIn, state.sessionOrgId, state.organization.orgSlug, orgSlug, router]);
 
   const submit = async (e: FormEvent) => {
@@ -58,7 +59,7 @@ function LoginInner() {
     });
     setRole("ORG_ADMIN");
     activateOrgAdminRole();
-    router.push(orgDashboardPath(result.workspace.organization.orgSlug));
+    openAppPath(orgDashboardPath(result.workspace.organization.orgSlug), router);
   };
 
   return (

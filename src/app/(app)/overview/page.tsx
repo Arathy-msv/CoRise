@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect } from "react";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { CampaignGamifiedProgress } from "@/components/campaign/CampaignGamifiedProgress";
 import { HeroVisual } from "@/components/campaign/HeroVisual";
 import { Badge } from "@/components/ui/Badge";
@@ -15,6 +15,8 @@ import { canCreateWebsite } from "@/lib/deployment";
 import { relativeTime } from "@/lib/format";
 import { campaignDraftView, campaignUpdatedAt } from "@/lib/impact-space/publish";
 import { newCampaignPath, orgDashboardPath, publicCampaignPath, publicOrgPath } from "@/lib/paths";
+import { stripBasePath } from "@/lib/public-asset";
+import { openAppPath } from "@/lib/static-nav";
 import { campaignProgress, formatGoalValue, progressPercent } from "@/lib/progress";
 import type { Campaign, CoriseDemoState } from "@/types/corise";
 
@@ -138,15 +140,15 @@ function CampaignList({ state, activeId }: { state: CoriseDemoState; activeId: s
 export default function OverviewPage() {
   const { state } = useCorise();
   const { hydrated, mode, role } = useApp();
-  const pathname = usePathname();
   const router = useRouter();
   const orgSlug = state.organization.orgSlug;
 
   useEffect(() => {
     if (!hydrated || !orgSlug) return;
     const expected = orgDashboardPath(orgSlug);
-    if (pathname.replace(/\/+$/, "") !== expected) router.replace(expected);
-  }, [hydrated, orgSlug, pathname, router]);
+    if (stripBasePath(window.location.pathname) === expected) return;
+    openAppPath(expected, router, "replace");
+  }, [hydrated, orgSlug, router]);
 
   if (!hydrated) {
     return <p className="py-16 text-center text-sm text-[var(--color-text-muted)]">Loading…</p>;

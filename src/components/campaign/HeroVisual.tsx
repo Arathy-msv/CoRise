@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useState } from "react";
 import { Icon } from "@/components/ui/Icon";
 import { heroImageSrc } from "@/lib/hero-images";
@@ -14,7 +13,6 @@ export function HeroVisual({
   title,
   className = "",
   aspect = "aspect-[16/9]",
-  sizes = "(min-width: 1024px) 960px, 100vw",
   priority = false,
   overlay = false,
 }: {
@@ -39,13 +37,11 @@ export function HeroVisual({
       data-hero={showImage ? "photo" : "fallback"}
     >
       {showImage && src ? (
-        <Image
+        <img
           src={src}
           alt=""
-          fill
-          sizes={sizes}
-          priority={priority}
-          className="object-cover"
+          fetchPriority={priority ? "high" : "auto"}
+          className="absolute inset-0 h-full w-full object-cover"
           onError={() => setFailedSrc(src)}
         />
       ) : (

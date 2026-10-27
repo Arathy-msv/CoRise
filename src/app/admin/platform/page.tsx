@@ -14,6 +14,8 @@ import { useApp } from "@/context/AppContext";
 import { useCorise } from "@/context/CoriseContext";
 import { canAccessPlatformAdmin, orgColor, orgInitials, platformStats, roleLabel, type DirectoryOrganization, type OrgLicenseStatus } from "@/lib/deployment";
 import { resetOrgPassword, setOrgLicenseStatus } from "@/lib/org-access";
+import { absoluteUrl } from "@/lib/public-asset";
+import { openAppPath } from "@/lib/static-nav";
 import { orgAdminLoginPath, orgDashboardPath, publicOrgPath } from "@/lib/paths";
 
 function Centered({ children }: { children: React.ReactNode }) {
@@ -57,7 +59,7 @@ export default function PlatformAdminPage() {
 
   useEffect(() => {
     if (hydrated && mode === "licensed" && state.organization.orgSlug) {
-      router.replace(orgDashboardPath(state.organization.orgSlug));
+      openAppPath(orgDashboardPath(state.organization.orgSlug), router, "replace");
     }
   }, [hydrated, mode, router, state.organization.orgSlug]);
 
@@ -86,7 +88,7 @@ export default function PlatformAdminPage() {
   }
 
   const accessOrg = accessId ? organizations.find((org) => org.id === accessId) : undefined;
-  const abs = (path: string) => (origin ? `${origin}${path}` : path);
+  const abs = (path: string) => absoluteUrl(path, origin);
 
   const resetPassword = async (org: DirectoryOrganization) => {
     if (!window.confirm(`Reset the password for ${org.name}? The current password will stop working. You'll see the new one once.`)) return;

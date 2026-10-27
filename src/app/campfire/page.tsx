@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useCorise } from "@/context/CoriseContext";
 import { publicCampaignPath } from "@/lib/paths";
+import { openAppPath } from "@/lib/static-nav";
 import { CAMPFIRE_SLUG } from "@/lib/storage";
 
 export default function CampfirePage() {
@@ -12,7 +13,7 @@ export default function CampfirePage() {
 
   useEffect(() => {
     if (!hydrated) return;
-    router.replace(publicCampaignPath(CAMPFIRE_SLUG, state.organization.orgSlug));
+    openAppPath(publicCampaignPath(CAMPFIRE_SLUG, state.organization.orgSlug), router, "replace");
   }, [hydrated, router, state.organization.orgSlug]);
 
   return <p className="py-20 text-center text-sm text-[var(--color-text-muted)]">Lighting the campfire…</p>;

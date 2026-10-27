@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Button, type ButtonVariant } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
+import { absoluteUrl } from "@/lib/public-asset";
 
 /** Copies an absolute URL for a same-origin path. Reports failure instead of pretending. */
 export function CopyLinkButton({
@@ -19,7 +20,7 @@ export function CopyLinkButton({
   const [state, setState] = useState<"idle" | "copied" | "failed">("idle");
 
   const copy = async () => {
-    const url = `${window.location.origin}${path}`;
+    const url = absoluteUrl(path);
     try {
       await navigator.clipboard.writeText(url);
       setState("copied");
@@ -37,6 +38,3 @@ export function CopyLinkButton({
   );
 }
 
-export function absoluteUrl(path: string): string {
-  return typeof window === "undefined" ? path : `${window.location.origin}${path}`;
-}

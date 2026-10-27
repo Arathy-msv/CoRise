@@ -7,6 +7,7 @@ import { AuthLayout } from "@/components/auth/AuthLayout";
 import { OwnerSignupForm } from "@/components/auth/OwnerSignupForm";
 import { useCorise } from "@/context/CoriseContext";
 import { safeNextPath } from "@/lib/paths";
+import { openAppPath } from "@/lib/static-nav";
 
 function SignupInner() {
   const { state, hydrated, signIn } = useCorise();
@@ -17,7 +18,7 @@ function SignupInner() {
 
   useEffect(() => {
     if (submitted.current) return;
-    if (hydrated && state.isSignedIn) router.replace(next);
+    if (hydrated && state.isSignedIn) openAppPath(next, router, "replace");
   }, [hydrated, state.isSignedIn, router, next]);
 
   return (
@@ -32,7 +33,7 @@ function SignupInner() {
         onSubmit={({ name, email }) => {
           submitted.current = true;
           signIn({ userName: name, email });
-          router.push(next);
+          openAppPath(next, router);
         }}
         footer={
           <p className="text-xs text-[var(--color-text-muted)]">
