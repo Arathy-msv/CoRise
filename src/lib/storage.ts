@@ -153,6 +153,25 @@ function withDemoGames(state: CoriseDemoState): CoriseDemoState {
   return withCastle(withCampfire(withCozyPaws(withGrandPrix(withSchoolGarden(state)))));
 }
 
+const SHOWCASE_CAMPAIGN_IDS = new Set([
+  SCHOOL_GARDEN_ID,
+  YOUTH_GRAND_PRIX_ID,
+  COZY_PAWS_ID,
+  CAMPFIRE_ID,
+  CASTLE_ID,
+]);
+
+/** Sample content and the fixed game-demo campaigns. Provisioned organizations never keep these. */
+export function isShowcaseCampaign(campaign: { id: string; isSample?: boolean }): boolean {
+  return Boolean(campaign.isSample) || SHOWCASE_CAMPAIGN_IDS.has(campaign.id);
+}
+
+/** Signed-out sample workspace, including the SaaS game-demo campaigns. */
+export function signedOutSampleState(): CoriseDemoState {
+  const base = createInitialState();
+  return isSaasMode() ? withDemoGames(base) : base;
+}
+
 /**
  * The game demo links (/garden, /race, /shelter, /campfire, /castle) are a SaaS showcase
  * fixture. A fresh Licensed Edition workspace starts genuinely empty, so it reads the
@@ -218,7 +237,9 @@ export function loadState(): CoriseDemoState {
       return fallback;
     }
     const managerRole = normalizeManagerRole(parsed, fallback);
-    return applyDemoGames({
+    const sessionOrgId = typeof parsed.sessionOrgId === "string" && parsed.sessionOrgId ? parsed.sessionOrgId : null;
+    const campaigns = (sessionOrgId ? parsed.campaigns.filter((c) => !isShowcaseCampaign(c)) : parsed.campaigns).map(normalizeCampaign);
+    const merged: CoriseDemoState = {
       ...fallback,
       ...parsed,
       version: 1,
@@ -227,14 +248,16 @@ export function loadState(): CoriseDemoState {
       organization: { ...fallback.organization, ...parsed.organization },
       website: parsed.website === undefined ? fallback.website : parsed.website,
       websiteDraft: parsed.websiteDraft ?? null,
-      campaigns: parsed.campaigns.map(normalizeCampaign),
+      campaigns,
       activity: parsed.activity ?? fallback.activity,
       marketplace: parsed.marketplace?.length ? parsed.marketplace : fallback.marketplace,
       draft: parsed.draft ?? null,
       pendingSpace: parsed.pendingSpace ?? null,
       claimedSpace: parsed.claimedSpace ?? null,
+      sessionOrgId,
       toast: null,
-    });
+    };
+    return sessionOrgId ? merged : applyDemoGames(merged);
   } catch {
     return fallback;
   }

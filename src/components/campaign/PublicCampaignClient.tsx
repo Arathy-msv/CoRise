@@ -18,6 +18,7 @@ import { Icon } from "@/components/ui/Icon";
 import { ToastHost } from "@/components/ui/Toast";
 import { useCorise } from "@/context/CoriseContext";
 import { formatInr, percent } from "@/lib/format";
+import { findWorkspaceBySlug, type OrgWorkspace } from "@/lib/org-access";
 import { publicCampaignPath, publicOrgPath } from "@/lib/paths";
 import { campaignProgress, formatGoalValue, formatUsd, parsePledge, progressPercent } from "@/lib/progress";
 import type { Campaign } from "@/types/corise";
@@ -34,7 +35,23 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
   const { hydrated, state, getPublicCampaign, recordQuizCompletion, castPollVote, recordParticipation, recordPledge, showToast } =
     useCorise();
   const orgMatches = !orgSlug || orgSlug === state.organization.orgSlug;
-  const campaign = orgMatches ? getPublicCampaign(slug) : undefined;
+  const [externalWorkspace, setExternalWorkspace] = useState<OrgWorkspace | null>(null);
+  const [workspaceReady, setWorkspaceReady] = useState(false);
+  useEffect(() => {
+    if (!orgSlug || orgSlug === state.organization.orgSlug) {
+      setExternalWorkspace(null);
+    } else {
+      setExternalWorkspace(findWorkspaceBySlug(orgSlug));
+    }
+    setWorkspaceReady(true);
+  }, [orgSlug, state.organization.orgSlug]);
+  const externalCampaign =
+    externalWorkspace?.website?.status === "published"
+      ? externalWorkspace.campaigns.find((c) => (c.slug === slug || c.id === slug) && c.status === "published" && !c.archived)
+      : undefined;
+  const campaign = (orgMatches ? getPublicCampaign(slug) : undefined) ?? externalCampaign;
+  const publicOrganization = externalWorkspace && !orgMatches ? externalWorkspace.organization : state.organization;
+  const websiteLive = Boolean(orgMatches ? state.website?.status === "published" : externalWorkspace?.website?.status === "published");
   const [challengeDone, setChallengeDone] = useState(false);
   const [ctaDone, setCtaDone] = useState(false);
   const [shared, setShared] = useState(false);
@@ -50,7 +67,6 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
   const actionRef = useRef<HTMLDivElement>(null);
   const pledgeRef = useRef<HTMLInputElement>(null);
   const launchRef = useRef<HTMLDivElement>(null);
-  const websiteLive = state.website?.status === "published";
 
   useEffect(() => {
     try {
@@ -69,7 +85,7 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
     }
   };
 
-  if (!hydrated) {
+  if (!hydrated || (Boolean(orgSlug) && !orgMatches && !workspaceReady)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[#fbfaf6] text-sm text-[var(--color-text-muted)]">
         Loading campaign…
@@ -88,8 +104,8 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
           This campaign isn&apos;t published yet, has been archived, or the link is incomplete.
         </p>
         {websiteLive ? (
-          <Link href={publicOrgPath(state.organization.orgSlug)} className="text-sm font-semibold text-[var(--color-primary)] underline">
-            Visit {state.organization.name}
+          <Link href={publicOrgPath(publicOrganization.orgSlug)} className="text-sm font-semibold text-[var(--color-primary)] underline">
+            Visit {publicOrganization.name}
           </Link>
         ) : null}
       </div>
@@ -255,7 +271,7 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
         headerAction={
           websiteLive ? (
             <Link
-              href={publicOrgPath(state.organization.orgSlug)}
+              href={publicOrgPath(publicOrganization.orgSlug)}
               className="text-sm font-medium text-[var(--color-text-muted)] hover:text-[var(--color-primary)]"
             >
               Visit organization
@@ -619,7 +635,7 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
       </div>
       {shareOpen ? (
         <PersonalizedShareModal
-          path={publicCampaignPath(campaign.slug, state.organization.orgSlug)}
+          path={publicCampaignPath(campaign.slug, publicOrganization.orgSlug)}
           campaignTitle={campaign.headline || campaign.title}
           defaultName={endorserName}
           onNameChange={rememberEndorserName}

@@ -15,11 +15,15 @@ export function OwnerSignupForm({
   loading = false,
   onSubmit,
   footer,
+  nameLabel = "Full name",
+  emailLabel = "Email",
 }: {
   submitLabel: ReactNode;
   loading?: boolean;
   onSubmit: (details: OwnerDetails) => void;
   footer?: ReactNode;
+  nameLabel?: string;
+  emailLabel?: string;
 }) {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -48,7 +52,7 @@ export function OwnerSignupForm({
 
   return (
     <form onSubmit={submit} noValidate className="flex flex-col gap-4">
-      <Field label="Full name" error={errors.name}>
+      <Field label={nameLabel} error={errors.name}>
         <TextInput
           value={name}
           onChange={(e) => setName(e.target.value)}
@@ -58,7 +62,7 @@ export function OwnerSignupForm({
           aria-invalid={Boolean(errors.name)}
         />
       </Field>
-      <Field label="Email" error={errors.email}>
+      <Field label={emailLabel} error={errors.email}>
         <TextInput
           type="email"
           value={email}

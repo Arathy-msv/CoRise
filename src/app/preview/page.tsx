@@ -17,8 +17,12 @@ import { ToastHost } from "@/components/ui/Toast";
 import { AddSectionModal, ImagePickerModal } from "@/components/website/EditorModals";
 import { WebsiteEditProvider, type ImageTarget, type WebsiteEditApi } from "@/components/website/InlineEditing";
 import { OrgWebsiteRenderer } from "@/components/website/OrgWebsiteRenderer";
+import { OrgReadyDialog } from "@/components/auth/OrgReadyDialog";
+import { useApp } from "@/context/AppContext";
 import { useCorise } from "@/context/CoriseContext";
+import { canAccessPlatformAdmin } from "@/lib/deployment";
 import { campaignDraftView } from "@/lib/impact-space/publish";
+import { provisionOrganization, type ProvisionSuccess } from "@/lib/org-access";
 import { publicCampaignPath, publicOrgPath } from "@/lib/paths";
 import { createSectionFromTemplate, insertSectionAt, removeSectionAt, swapSections } from "@/lib/website-sections";
 import type { WebsiteSection } from "@/types/corise";
@@ -60,7 +64,10 @@ function DeviceToggle({ value, onChange }: { value: Device; onChange: (d: Device
  * Publishing makes that public website live at /org/:slug. No campaign is created with it.
  */
 function OrgWebsitePreviewInner() {
-  const { state, hydrated, signIn, claimPendingWebsite, discardPendingSpace, updatePendingWebsite, publishWebsite } = useCorise();
+  const { state, hydrated, signIn, claimPendingWebsite, discardPendingSpace, updatePendingWebsite, publishWebsite, setPendingAccessMode } =
+    useCorise();
+  const { mode, role, hydrated: appHydrated } = useApp();
+  const provisioning = appHydrated && canAccessPlatformAdmin(mode, role);
   const router = useRouter();
   const [device, setDevice] = useState<Device>("desktop");
   const [editing, setEditing] = useState(false);
@@ -68,6 +75,7 @@ function OrgWebsitePreviewInner() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [live, setLive] = useState(false);
+  const [ready, setReady] = useState<ProvisionSuccess | null>(null);
   const [addAt, setAddAt] = useState<number | null>(null);
   const [imageTarget, setImageTarget] = useState<ImageTarget | null>(null);
 
@@ -78,6 +86,18 @@ function OrgWebsitePreviewInner() {
   const pending = state.pendingSpace;
   const website = pending ? pending.website : state.website;
   const organization = pending ? pending.organization : state.organization;
+
+  if (ready) {
+    return (
+      <OrgReadyDialog
+        result={ready}
+        onClose={() => {
+          setReady(null);
+          router.push("/admin/platform");
+        }}
+      />
+    );
+  }
 
   if (!website || !organization) {
     return (
@@ -106,7 +126,7 @@ function OrgWebsitePreviewInner() {
     requestImage: setImageTarget,
   };
 
-  const publish = async (details?: OwnerDetails) => {
+  const publishOwned = async (details?: OwnerDetails) => {
     setBusy(true);
     setError(null);
     await new Promise((r) => setTimeout(r, 400));
@@ -123,9 +143,31 @@ function OrgWebsitePreviewInner() {
     setLive(true);
   };
 
+  const publishProvisioned = async (details: OwnerDetails) => {
+    if (!pending) return;
+    setBusy(true);
+    setError(null);
+    const result = await provisionOrganization({
+      organization: pending.organization,
+      website: pending.website,
+      adminName: details.name,
+      adminEmail: details.email,
+      mode: pending.accessMode === "licensed" ? "licensed" : "demo",
+    });
+    setBusy(false);
+    if (!result.ok) {
+      setError(result.error);
+      return;
+    }
+    discardPendingSpace();
+    setAskDetails(false);
+    setEditing(false);
+    setReady(result);
+  };
+
   const onPrimary = () => {
-    if (!state.isSignedIn) return setAskDetails(true);
-    void publish();
+    if (provisioning || !state.isSignedIn) return setAskDetails(true);
+    void publishOwned();
   };
 
   const startOver = () => {
@@ -175,6 +217,36 @@ function OrgWebsitePreviewInner() {
 
       <main className={`px-4 pb-28 pt-4 transition-[padding] sm:px-6 sm:pb-10 ${editing ? "lg:pr-[404px]" : ""}`}>
         <div className="flex flex-col items-center gap-3">
+          {provisioning && pending && !ready ? (
+            <div className="flex flex-col items-center gap-2">
+              <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1" role="group" aria-label="Access type">
+                {(
+                  [
+                    ["demo", "Demo"],
+                    ["licensed", "Licensed"],
+                  ] as const
+                ).map(([id, label]) => {
+                  const selected = (pending.accessMode ?? "demo") === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      aria-pressed={selected}
+                      onClick={() => setPendingAccessMode(id)}
+                      className={`h-8 rounded-full px-3.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] ${
+                        selected ? "bg-white text-[var(--color-text)] shadow-sm" : "text-[var(--color-text-muted)]"
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  );
+                })}
+              </div>
+              <p className="max-w-md text-center text-xs text-[var(--color-text-muted)]">
+                Demo creates a password to share. Licensed also creates a license number. No campaign is created.
+              </p>
+            </div>
+          ) : null}
           <DeviceToggle value={device} onChange={setDevice} />
           <p className="text-xs text-[var(--color-text-muted)]">
             {live
@@ -244,21 +316,38 @@ function OrgWebsitePreviewInner() {
 
       {askDetails ? (
         <Modal
-          title="Publish your website"
-          description="Just your name and email. You'll own this website and can edit it anytime."
+          title={provisioning ? "Who will manage this organization?" : "Publish your website"}
+          description={
+            provisioning
+              ? "They will use this email to sign in. Corise creates a password you can copy and share. No campaign is created."
+              : "Just your name and email. You'll own this website and can edit it anytime."
+          }
           onClose={() => !busy && setAskDetails(false)}
         >
+          {error ? (
+            <p role="alert" className="mb-3 text-sm font-medium text-[var(--color-danger)]">
+              {error}
+            </p>
+          ) : null}
           <OwnerSignupForm
-            submitLabel={busy ? "Publishing…" : "Publish"}
+            nameLabel={provisioning ? "Organization admin name" : undefined}
+            emailLabel={provisioning ? "Admin email" : undefined}
+            submitLabel={busy ? "Creating…" : provisioning ? "Create organization" : "Publish"}
             loading={busy}
-            onSubmit={(details) => void publish(details)}
+            onSubmit={(details) => void (provisioning ? publishProvisioned(details) : publishOwned(details))}
             footer={
-              <p className="text-center text-xs text-[var(--color-text-muted)]">
-                Demo sign-in, saved in this browser only.{" "}
-                <Link href="/login?next=/preview" className="font-semibold text-[var(--color-primary)] hover:underline">
-                  Log in instead
-                </Link>
-              </p>
+              provisioning ? (
+                <p className="text-center text-xs text-[var(--color-text-muted)]">
+                  The password is shown once after this step. It is saved in this browser only, not as a production login.
+                </p>
+              ) : (
+                <p className="text-center text-xs text-[var(--color-text-muted)]">
+                  Demo sign-in, saved in this browser only.{" "}
+                  <Link href="/login?next=/preview" className="font-semibold text-[var(--color-primary)] hover:underline">
+                    Log in instead
+                  </Link>
+                </p>
+              )
             }
           />
         </Modal>

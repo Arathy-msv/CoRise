@@ -35,9 +35,10 @@ function activeCampaign(s: CoriseDemoState): Campaign | undefined {
   return newest(highlighted) ?? newest(visible);
 }
 
-function OrgHeader({ state }: { state: CoriseDemoState }) {
+function OrgHeader({ state, hideCreate = false }: { state: CoriseDemoState; hideCreate?: boolean }) {
   const org = state.organization;
   const siteLive = state.website?.status === "published";
+  const campaignCount = state.campaigns.filter((c) => !c.archived).length;
   return (
     <section
       aria-label="Organization"
@@ -57,10 +58,12 @@ function OrgHeader({ state }: { state: CoriseDemoState }) {
           </Link>
         ) : null}
       </div>
-      <ButtonLink href={newCampaignPath(org.orgSlug)} variant="brand" size="lg" className="shrink-0">
-        <Icon name="plus" />
-        New Campaign
-      </ButtonLink>
+      {hideCreate ? null : (
+        <ButtonLink href={newCampaignPath(org.orgSlug)} variant="brand" size="lg" className="shrink-0">
+          <Icon name="plus" />
+          {campaignCount === 0 ? "Create Your First Campaign" : "New Campaign"}
+        </ButtonLink>
+      )}
     </section>
   );
 }
@@ -145,14 +148,28 @@ export default function OverviewPage() {
   if (!active) {
     return (
       <div className="mx-auto max-w-3xl space-y-10">
-        <OrgHeader state={state} />
+        <OrgHeader state={state} hideCreate={websiteLive} />
         {!websiteLive ? <PublishWebsiteBanner canCreate={canCreate} /> : null}
-        <div className="py-12 text-center">
-          <h1 className="text-[28px] font-semibold">Create your first campaign</h1>
-          <p className="mt-2 text-[15px] text-[var(--color-text-muted)]">Three quick steps: a headline and goal, an optional progress widget, then publish.</p>
+        <div className="py-8 text-center" data-empty-campaigns>
+          <p className="text-sm font-medium text-[var(--color-text-muted)]">Welcome to {state.organization.name}</p>
+          <h1 className="mt-2 text-[28px] font-semibold">You haven&apos;t created any campaigns yet.</h1>
+          {websiteLive ? (
+            <p className="mx-auto mt-2 max-w-md text-[15px] text-[var(--color-text-muted)]">
+              Your organization website is ready. You can now create your first campaign whenever you&apos;re ready.
+            </p>
+          ) : (
+            <p className="mx-auto mt-2 max-w-md text-[15px] text-[var(--color-text-muted)]">
+              Three quick steps: a headline and goal, an optional progress widget, then publish.
+            </p>
+          )}
+          <p className="mt-4 text-sm" data-campaign-count="0">
+            <span className="font-semibold">Website:</span> {websiteLive ? "Live" : "Not published yet"}
+            <span className="mx-2 text-[var(--color-text-muted)]">·</span>
+            <span className="font-semibold">Campaigns:</span> 0
+          </p>
           <ButtonLink href={newCampaignPath(state.organization.orgSlug)} size="lg" className="mt-6">
             <Icon name="plus" />
-            New Campaign
+            Create Your First Campaign
           </ButtonLink>
         </div>
       </div>

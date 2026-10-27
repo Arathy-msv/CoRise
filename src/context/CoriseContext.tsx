@@ -30,7 +30,8 @@ import {
   emptyWebsiteDraft,
   websiteDraftFromExisting,
 } from "@/lib/sample-data";
-import { CORISE_STORAGE_KEY, clearState, loadState, saveState } from "@/lib/storage";
+import { persistSessionWorkspace, type OrgWorkspace } from "@/lib/org-access";
+import { CORISE_STORAGE_KEY, clearState, loadState, saveState, signedOutSampleState } from "@/lib/storage";
 import { slugify, uid } from "@/lib/format";
 import {
   validateCampaignForPublish,
@@ -47,6 +48,8 @@ type CoriseContextValue = {
   hydrated: boolean;
   /** Signs the visitor in as the workspace owner (demo only — no password, not secure). */
   signIn: (opts?: { userName?: string; email?: string }) => void;
+  /** Opens one provisioned organization's workspace. Does not accept a password. */
+  enterOrganizationSession: (input: { organizationId: string; email: string; name: string; workspace: OrgWorkspace }) => void;
   signOut: () => void;
   resetDemo: () => void;
   /** Starts a fresh Licensed Edition workspace: no website yet, no campaigns. */
@@ -77,6 +80,7 @@ type CoriseContextValue = {
   deleteWebsite: () => void;
   setWebsitePreviewMode: (mode: "desktop" | "mobile") => void;
   setPendingSpace: (space: PendingImpactSpace) => void;
+  setPendingAccessMode: (mode: "demo" | "licensed") => void;
   discardPendingSpace: () => void;
   /** Edits the unsaved organization website (before it is claimed into the workspace). */
   updatePendingWebsite: (patch: Partial<OrgWebsite>) => void;
@@ -219,6 +223,7 @@ export function CoriseProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     if (!hydrated) return;
     saveState(state);
+    if (state.sessionOrgId) persistSessionWorkspace(state);
   }, [state, hydrated]);
 
   const showToast = useCallback(
@@ -243,14 +248,45 @@ export function CoriseProvider({ children }: { children: ReactNode }) {
     }));
   }, [setState]);
 
+  const enterOrganizationSession = useCallback(
+    (input: { organizationId: string; email: string; name: string; workspace: OrgWorkspace }) => {
+      const base = createLicensedInitialState();
+      setState({
+        ...base,
+        isSignedIn: true,
+        managerRole: OWNER_ROLE,
+        userRole: OWNER_LABEL,
+        userName: input.name.trim() || input.workspace.organization.name,
+        userEmail: input.email,
+        organization: input.workspace.organization,
+        website: input.workspace.website,
+        websiteDraft: null,
+        campaigns: input.workspace.campaigns.filter((c) => !c.isSample),
+        activity: input.workspace.activity,
+        draft: null,
+        pendingSpace: null,
+        claimedSpace: input.workspace.claimedSpace,
+        lastPublishedId: null,
+        sessionOrgId: input.organizationId,
+        toast: null,
+      });
+    },
+    [setState]
+  );
+
   const signOut = useCallback(() => {
-    setState((s) => ({
-      ...s,
-      isSignedIn: false,
-      managerRole: null,
-      draft: null,
-      websiteDraft: null,
-    }));
+    setState((s) => {
+      if (s.sessionOrgId) {
+        return { ...signedOutSampleState(), toast: { message: "You have signed out.", tone: "info" } };
+      }
+      return {
+        ...s,
+        isSignedIn: false,
+        managerRole: null,
+        draft: null,
+        websiteDraft: null,
+      };
+    });
   }, [setState]);
 
   const resetDemo = useCallback(() => {
@@ -585,6 +621,13 @@ export function CoriseProvider({ children }: { children: ReactNode }) {
     setState((s) => ({ ...s, pendingSpace: space }));
   }, [setState]);
 
+  const setPendingAccessMode = useCallback((mode: "demo" | "licensed") => {
+    setState((s) => {
+      if (!s.pendingSpace || s.pendingSpace.accessMode === mode) return s;
+      return { ...s, pendingSpace: { ...s.pendingSpace, accessMode: mode } };
+    });
+  }, [setState]);
+
   const discardPendingSpace = useCallback(() => {
     setState((s) => ({ ...s, pendingSpace: null }));
   }, [setState]);
@@ -749,6 +792,14 @@ export function CoriseProvider({ children }: { children: ReactNode }) {
       const campaign = buildOrgCampaign(input, stateRef.current.organization);
       setState((s) => ({
         ...s,
+        website: s.website
+          ? {
+              ...s.website,
+              sections: s.website.sections.some((section) => section.id === "campaigns")
+                ? s.website.sections.map((section) => (section.id === "campaigns" ? { ...section, enabled: true } : section))
+                : [...s.website.sections, { id: "campaigns" as const, label: "Featured campaigns", enabled: true }],
+            }
+          : s.website,
         campaigns: [campaign, ...s.campaigns],
         lastPublishedId: campaign.id,
         activity: [
@@ -807,6 +858,7 @@ export function CoriseProvider({ children }: { children: ReactNode }) {
       state,
       hydrated,
       signIn,
+      enterOrganizationSession,
       signOut,
       resetDemo,
       startLicensedWorkspace,
@@ -834,6 +886,7 @@ export function CoriseProvider({ children }: { children: ReactNode }) {
       deleteWebsite,
       setWebsitePreviewMode,
       setPendingSpace,
+      setPendingAccessMode,
       discardPendingSpace,
       updatePendingWebsite,
       claimPendingSpace,
@@ -848,6 +901,7 @@ export function CoriseProvider({ children }: { children: ReactNode }) {
       state,
       hydrated,
       signIn,
+      enterOrganizationSession,
       signOut,
       resetDemo,
       startLicensedWorkspace,
@@ -875,6 +929,7 @@ export function CoriseProvider({ children }: { children: ReactNode }) {
       deleteWebsite,
       setWebsitePreviewMode,
       setPendingSpace,
+      setPendingAccessMode,
       discardPendingSpace,
       updatePendingWebsite,
       claimPendingSpace,

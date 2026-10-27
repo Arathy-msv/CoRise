@@ -5,6 +5,10 @@ import { buildWebsiteFromSimpleInput } from "@/lib/website-suggestions";
 
 export type WebsiteStatus = "live" | "draft";
 
+export type OrgAccessMode = "demo" | "licensed";
+
+export type OrgLicenseStatus = "active" | "inactive" | "expired";
+
 /** Shared localStorage key for deployment mode/role, read directly by lib/storage.ts too. */
 export const APP_STORAGE_KEY = "corise-app-v1";
 
@@ -38,6 +42,13 @@ export interface DirectoryOrganization {
   /** Subscription the organization registered its website on. */
   plan: PlanId;
   websiteStatus: WebsiteStatus;
+  /** Set when a platform admin creates this organization. Sample listings omit it. */
+  provisioned?: boolean;
+  accessMode?: OrgAccessMode;
+  adminName?: string;
+  adminEmail?: string;
+  licenseKey?: string | null;
+  licenseStatus?: OrgLicenseStatus | null;
 }
 
 export const SEED_ORGANIZATIONS: DirectoryOrganization[] = [
@@ -137,10 +148,12 @@ export function appHomePath(mode: DeploymentMode, role: AppRole): string {
 }
 
 export function upsertOrganization(list: DirectoryOrganization[], org: DirectoryOrganization): DirectoryOrganization[] {
-  const i = list.findIndex((o) => o.slug === org.slug);
+  const i = list.findIndex((o) => o.slug === org.slug || o.id === org.id);
   if (i === -1) return [...list, org];
+  const prev = list[i];
+  const patch = Object.fromEntries(Object.entries(org).filter(([, value]) => value !== undefined)) as Partial<DirectoryOrganization>;
   const next = [...list];
-  next[i] = { ...list[i], ...org, id: list[i].id, createdAt: list[i].createdAt };
+  next[i] = { ...prev, ...patch, id: prev.id, createdAt: prev.createdAt };
   return next;
 }
 

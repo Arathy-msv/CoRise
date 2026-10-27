@@ -9,12 +9,14 @@ export function Modal({
   onClose,
   children,
   icon,
+  wide = false,
 }: {
   title: string;
   description?: ReactNode;
   onClose: () => void;
   children: ReactNode;
   icon?: ReactNode;
+  wide?: boolean;
 }) {
   const titleId = useId();
 
@@ -38,7 +40,7 @@ export function Modal({
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className="relative w-full max-w-md rounded-t-2xl bg-white p-6 shadow-[var(--shadow-lg)] sm:rounded-2xl"
+        className={`relative max-h-[min(92vh,900px)] w-full overflow-y-auto rounded-t-2xl bg-white p-6 shadow-[var(--shadow-lg)] sm:rounded-2xl ${wide ? "max-w-xl" : "max-w-md"}`}
       >
         <button
           type="button"
