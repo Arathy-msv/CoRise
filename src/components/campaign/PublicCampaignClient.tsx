@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useRef, useState, type FormEvent } from "react";
 import Link from "next/link";
 import { CampaignGamifiedProgress } from "@/components/campaign/CampaignGamifiedProgress";
 import { CampaignLayout, campaignHasActivities } from "@/components/campaign/CampaignLayout";
@@ -282,7 +282,11 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
           title: campaign.headline || campaign.title,
           subtitle: campaign.description,
           introShare: <SharePill onClick={() => setShareOpen(true)} />,
-          banner: <EndorsementBanner />,
+          banner: (
+            <Suspense fallback={null}>
+              <EndorsementBanner />
+            </Suspense>
+          ),
           whyItMatters: campaign.whyItMatters,
           whyShare: <SharePill prominent onClick={() => setShareOpen(true)} />,
           widget: isPlayableGame ? (
