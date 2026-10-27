@@ -11,9 +11,10 @@ import { ButtonLink } from "@/components/ui/Button";
 import { CopyTextButton } from "@/components/ui/CopyTextButton";
 import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
+import { useCorise } from "@/context/CoriseContext";
 import { canAccessPlatformAdmin, orgColor, orgInitials, platformStats, roleLabel, type DirectoryOrganization, type OrgLicenseStatus } from "@/lib/deployment";
 import { resetOrgPassword, setOrgLicenseStatus } from "@/lib/org-access";
-import { orgAdminLoginPath, publicOrgPath } from "@/lib/paths";
+import { orgAdminLoginPath, orgDashboardPath, publicOrgPath } from "@/lib/paths";
 
 function Centered({ children }: { children: React.ReactNode }) {
   return <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-4 text-[var(--color-text-muted)]">{children}</div>;
@@ -45,6 +46,7 @@ function licenseLabel(org: DirectoryOrganization): string {
 export default function PlatformAdminPage() {
   const router = useRouter();
   const { hydrated, mode, role, organizations, setRole } = useApp();
+  const { state } = useCorise();
   const [origin, setOrigin] = useState("");
   const [accessId, setAccessId] = useState<string | null>(null);
   const [revealed, setRevealed] = useState<{ id: string; password: string } | null>(null);
@@ -54,8 +56,10 @@ export default function PlatformAdminPage() {
   useEffect(() => setOrigin(window.location.origin), []);
 
   useEffect(() => {
-    if (hydrated && mode === "licensed") router.replace("/dashboard");
-  }, [hydrated, mode, router]);
+    if (hydrated && mode === "licensed" && state.organization.orgSlug) {
+      router.replace(orgDashboardPath(state.organization.orgSlug));
+    }
+  }, [hydrated, mode, router, state.organization.orgSlug]);
 
   if (!hydrated) return <Centered>Loading platform…</Centered>;
   if (mode === "licensed") return <Centered>Licensed edition has no platform tier — opening your dashboard…</Centered>;

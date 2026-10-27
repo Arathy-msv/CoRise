@@ -50,7 +50,7 @@ const LICENSED_ROLES: AppRole[] = ["ORG_ADMIN", "SUPPORTER", "VISITOR"];
 export function RolePicker({ edition }: { edition: DeploymentMode }) {
   const router = useRouter();
   const { mode, licenseKey, setMode, setRole, activateLicense } = useApp();
-  const { signIn, startLicensedWorkspace } = useCorise();
+  const { state, signIn, startLicensedWorkspace } = useCorise();
   const [licenseOpen, setLicenseOpen] = useState(false);
   const roles = edition === "licensed" ? LICENSED_ROLES : SAAS_ROLES;
   const title = edition === "licensed" ? "Licensed Edition" : "Corise Cloud";
@@ -64,7 +64,7 @@ export function RolePicker({ edition }: { edition: DeploymentMode }) {
     setMode(edition);
     setRole(role);
     signIn({ userName: person.person, email: person.email });
-    router.push(appHomePath(edition, role));
+    router.push(appHomePath(edition, role, state.organization.orgSlug));
   };
 
   return (

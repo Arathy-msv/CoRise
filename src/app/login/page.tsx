@@ -10,6 +10,7 @@ import { Field, TextInput } from "@/components/ui/Field";
 import { useApp } from "@/context/AppContext";
 import { useCorise } from "@/context/CoriseContext";
 import { activateOrgAdminRole, authenticateOrgAdmin } from "@/lib/org-access";
+import { orgDashboardPath } from "@/lib/paths";
 
 function noticeMessage(notice: string | null): string {
   if (notice === "expired") return "This organization's license has expired. Ask your Corise administrator to renew it.";
@@ -32,7 +33,7 @@ function LoginInner() {
 
   useEffect(() => {
     if (!hydrated || !state.isSignedIn || !state.sessionOrgId) return;
-    if (!orgSlug || state.organization.orgSlug === orgSlug) router.replace("/dashboard");
+    if (!orgSlug || state.organization.orgSlug === orgSlug) router.replace(orgDashboardPath(state.organization.orgSlug));
   }, [hydrated, state.isSignedIn, state.sessionOrgId, state.organization.orgSlug, orgSlug, router]);
 
   const submit = async (e: FormEvent) => {
@@ -57,7 +58,7 @@ function LoginInner() {
     });
     setRole("ORG_ADMIN");
     activateOrgAdminRole();
-    router.push("/dashboard");
+    router.push(orgDashboardPath(result.workspace.organization.orgSlug));
   };
 
   return (
