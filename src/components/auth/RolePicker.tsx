@@ -104,7 +104,7 @@ export function RolePicker({ edition }: { edition: DeploymentMode }) {
                 <span className="text-3xl" aria-hidden>
                   {role.icon}
                 </span>
-                <h2 className="mt-3 text-xl font-semibold text-white">{role.name}</h2>
+                <h2 className="mt-3 text-3xl font-semibold text-white">{role.name}</h2>
                 <p className="mt-1 text-sm text-white/80">{role.person}</p>
                 <p className="mt-3 flex-1 text-sm text-[var(--color-navy-muted)]">{role.summary}</p>
                 <span className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-[var(--color-emerald)]">

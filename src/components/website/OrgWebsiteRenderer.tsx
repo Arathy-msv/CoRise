@@ -4,7 +4,7 @@ import { Fragment, type CSSProperties, type ReactNode } from "react";
 import { HeroVisual } from "@/components/campaign/HeroVisual";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
-import { StatusBadge } from "@/components/ui/Badge";
+import { Badge, StatusBadge } from "@/components/ui/Badge";
 import {
   AddSectionDivider,
   ChangeImageButton,
@@ -15,6 +15,7 @@ import {
 import type { Campaign, Organization, OrgWebsite, OrgWebsiteContent, WebsiteSection } from "@/types/corise";
 import { THEME_COLORS } from "@/types/corise";
 import { publicCampaignPath } from "@/lib/paths";
+import { isCampaignClosed } from "@/lib/progress";
 import { getFeaturedWebsiteCampaigns } from "@/lib/sample-data";
 import { sectionBackground, sectionKey } from "@/lib/website-sections";
 
@@ -96,7 +97,11 @@ export function OrgWebsiteRenderer({
             <article key={camp.id} className="site-card flex flex-col overflow-hidden rounded-2xl border border-black/5 bg-white shadow-sm">
               <HeroVisual imageKey={camp.heroImage} className="rounded-none" sizes="(min-width: 768px) 480px, 100vw" />
               <div className="flex flex-1 flex-col gap-2 p-4">
-                {onCampaignAction && camp.status !== "published" ? (
+                {isCampaignClosed(camp) ? (
+                  <div>
+                    <Badge>Closed</Badge>
+                  </div>
+                ) : onCampaignAction && camp.status !== "published" ? (
                   <div>
                     <StatusBadge state="draft" />
                   </div>
@@ -105,10 +110,12 @@ export function OrgWebsiteRenderer({
                 <p className="line-clamp-3 flex-1 text-sm text-[var(--color-text-muted)]">{camp.description}</p>
                 <div className="pt-1">
                   {onCampaignAction ? (
-                    <Button onClick={() => onCampaignAction(camp)}>{camp.primaryCta}</Button>
+                    <Button onClick={() => onCampaignAction(camp)}>
+                      {isCampaignClosed(camp) ? "View campaign" : camp.primaryCta}
+                    </Button>
                   ) : (
                     <ButtonLink href={publicCampaignPath(camp.slug, organization.orgSlug)}>
-                      {camp.primaryCta}
+                      {isCampaignClosed(camp) ? "View campaign" : camp.primaryCta}
                       <Icon name="arrowRight" />
                     </ButtonLink>
                   )}

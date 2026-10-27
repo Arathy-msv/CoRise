@@ -3,21 +3,15 @@
 import Link from "next/link";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { CampaignGamifiedProgress } from "@/components/campaign/CampaignGamifiedProgress";
-import { HeroVisual } from "@/components/campaign/HeroVisual";
-import { Badge } from "@/components/ui/Badge";
 import { ButtonLink } from "@/components/ui/Button";
-import { CopyLinkButton } from "@/components/ui/CopyLinkButton";
 import { Icon, type IconName } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
 import { useCorise } from "@/context/CoriseContext";
 import { canCreateWebsite } from "@/lib/deployment";
-import { relativeTime } from "@/lib/format";
-import { campaignDraftView, campaignUpdatedAt } from "@/lib/impact-space/publish";
-import { isOrgDashboardLocation, newCampaignPath, orgDashboardPath, publicCampaignPath, publicOrgPath } from "@/lib/paths";
+import { isOrgDashboardLocation, newCampaignPath, orgDashboardPath, publicOrgPath } from "@/lib/paths";
+import { formatUsd, isCampaignClosed } from "@/lib/progress";
 import { stripBasePath } from "@/lib/public-asset";
 import { openAppPath } from "@/lib/static-nav";
-import { campaignProgress, formatGoalValue, progressPercent } from "@/lib/progress";
 import type { Campaign, CoriseDemoState } from "@/types/corise";
 
 const EXTRAS: { href: string; label: string; body: string; icon: IconName }[] = [
@@ -30,19 +24,14 @@ const EXTRAS: { href: string; label: string; body: string; icon: IconName }[] = 
   { href: "/settings", label: "Settings", body: "Organization details", icon: "settings" },
 ];
 
-/** The page the dashboard focuses on: the more recent of the one just created and the latest published, else the newest. */
-function activeCampaign(s: CoriseDemoState): Campaign | undefined {
-  const visible = s.campaigns.filter((c) => !c.archived);
-  const byId = (id: string | null | undefined) => (id ? visible.find((c) => c.id === id) : undefined);
-  const newest = (list: Campaign[]) => [...list].sort((a, b) => campaignUpdatedAt(b).localeCompare(campaignUpdatedAt(a)))[0];
-  const highlighted = [byId(s.claimedSpace?.campaignId), byId(s.lastPublishedId)].filter((c): c is Campaign => Boolean(c));
-  return newest(highlighted) ?? newest(visible);
+function visibleCampaigns(campaigns: Campaign[]): Campaign[] {
+  return campaigns.filter((campaign) => !campaign.archived);
 }
 
 function OrgHeader({ state, hideCreate = false }: { state: CoriseDemoState; hideCreate?: boolean }) {
   const org = state.organization;
   const siteLive = state.website?.status === "published";
-  const campaignCount = state.campaigns.filter((c) => !c.archived).length;
+  const campaignCount = visibleCampaigns(state.campaigns).length;
   return (
     <section
       aria-label="Organization"
@@ -96,44 +85,25 @@ function PublishWebsiteBanner({ canCreate }: { canCreate: boolean }) {
   );
 }
 
-function CampaignList({ state, activeId }: { state: CoriseDemoState; activeId: string }) {
-  const others = state.campaigns.filter((c) => !c.archived && c.id !== activeId);
-  if (!others.length) return null;
+function StatCard({
+  label,
+  value,
+  hint,
+  count,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  count?: number;
+}) {
   return (
-    <section aria-labelledby="all-campaigns" className="space-y-3">
-      <h2 id="all-campaigns" className="text-lg font-semibold">
-        Other campaigns
-      </h2>
-      <ul className="divide-y divide-[var(--color-border)] overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-sm)]">
-        {others.map((c) => {
-          const view = campaignDraftView(c);
-          const goal = campaignProgress(c);
-          const live = c.status === "published";
-          return (
-            <li key={c.id} className="flex flex-wrap items-center gap-3 p-4">
-              <div className="min-w-0 flex-1">
-                <div className="flex flex-wrap items-center gap-2">
-                  {live ? <Badge tone="success">Live</Badge> : <Badge>Draft</Badge>}
-                  {goal ? (
-                    <span className="text-xs font-semibold text-[var(--color-text-muted)]">
-                      {Math.floor(progressPercent(goal.current, goal.target))}% of {formatGoalValue(goal.goalType, goal.target)}
-                    </span>
-                  ) : null}
-                </div>
-                <p className="mt-1 truncate font-semibold">{view.title}</p>
-              </div>
-              <div className="flex gap-2">
-                {live ? <CopyLinkButton path={publicCampaignPath(c.slug, state.organization.orgSlug)} label="Copy link" /> : null}
-                <ButtonLink href={`/preview?id=${c.id}`} variant="ghost" size="sm">
-                  <Icon name="edit" />
-                  Edit<span className="sr-only"> {view.title}</span>
-                </ButtonLink>
-              </div>
-            </li>
-          );
-        })}
-      </ul>
-    </section>
+    <article className="rounded-2xl bg-white p-6 shadow-[var(--shadow-sm)]">
+      <p className="text-sm font-medium text-[var(--color-text-muted)]">{label}</p>
+      <p className="mt-2 text-4xl font-semibold leading-none tracking-[-0.03em]" data-campaign-count={count}>
+        {value}
+      </p>
+      <p className="mt-3 text-sm text-[var(--color-text-muted)]">{hint}</p>
+    </article>
   );
 }
 
@@ -155,98 +125,73 @@ export default function OverviewPage() {
 
   const canCreate = canCreateWebsite(mode, role);
   const websiteLive = state.website?.status === "published";
-  const active = activeCampaign(state);
-
-  if (!active) {
-    return (
-      <div className="mx-auto max-w-3xl space-y-10">
-        <OrgHeader state={state} hideCreate={websiteLive} />
-        {!websiteLive ? <PublishWebsiteBanner canCreate={canCreate} /> : null}
-        <div className="py-8 text-center" data-empty-campaigns>
-          <p className="text-sm font-medium text-[var(--color-text-muted)]">Welcome to {state.organization.name}</p>
-          <h2 className="mt-2 text-[28px] font-semibold">You haven&apos;t created any campaigns yet.</h2>
-          {websiteLive ? (
-            <p className="mx-auto mt-2 max-w-md text-[15px] text-[var(--color-text-muted)]">
-              Your organization website is ready. You can now create your first campaign whenever you&apos;re ready.
-            </p>
-          ) : (
-            <p className="mx-auto mt-2 max-w-md text-[15px] text-[var(--color-text-muted)]">
-              Three quick steps: a headline and goal, an optional progress widget, then publish.
-            </p>
-          )}
-          <p className="mt-4 text-sm" data-campaign-count="0">
-            <span className="font-semibold">Website:</span> {websiteLive ? "Live" : "Not published yet"}
-            <span className="mx-2 text-[var(--color-text-muted)]">·</span>
-            <span className="font-semibold">Campaigns:</span> 0
-          </p>
-          <ButtonLink href={newCampaignPath(state.organization.orgSlug)} size="lg" className="mt-6">
-            <Icon name="plus" />
-            Create Your First Campaign
-          </ButtonLink>
-        </div>
-      </div>
-    );
-  }
-
-  const page = campaignDraftView(active);
-  const live = active.status === "published";
-  const path = publicCampaignPath(active.slug, state.organization.orgSlug);
-  const usingSample = Boolean(active.isSample) && !state.claimedSpace;
-  const goal = campaignProgress(active);
+  const campaigns = visibleCampaigns(state.campaigns);
+  const published = campaigns.filter((campaign) => campaign.status === "published");
+  const closedCount = published.filter((campaign) => isCampaignClosed(campaign)).length;
+  const activeCount = published.length - closedCount;
+  const draftCount = campaigns.length - published.length;
+  const fundsRaised = campaigns.reduce((sum, campaign) => sum + (campaign.metrics.fundsRaised || 0) + (campaign.metrics.pledged || 0), 0);
+  const supporters = campaigns.reduce((sum, campaign) => sum + (campaign.metrics.supporters || 0), 0);
+  const usingSample = campaigns.some((campaign) => campaign.isSample) && !state.claimedSpace;
 
   return (
     <div className="mx-auto max-w-3xl space-y-10">
-      <OrgHeader state={state} />
+      <OrgHeader state={state} hideCreate={websiteLive && campaigns.length === 0} />
       {!websiteLive ? <PublishWebsiteBanner canCreate={canCreate} /> : null}
       {usingSample && canCreate ? (
         <p className="text-sm text-[var(--color-text-muted)]">
-          You&apos;re looking at sample content.{" "}
+          Some of these numbers come from sample campaigns.{" "}
           <Link href="/create" className="font-semibold text-[var(--color-primary)] hover:underline">
             Create your own page
           </Link>
         </p>
       ) : null}
 
-      <header className="flex flex-col gap-5 sm:flex-row sm:items-center">
-        <HeroVisual imageKey={page.heroImage} aspect="aspect-[4/3]" className="w-28 shrink-0 rounded-xl" sizes="112px" />
-        <div className="min-w-0 flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            {live ? <Badge tone="success">Live</Badge> : <Badge>Draft</Badge>}
-            <span className="text-xs text-[var(--color-text-muted)]">Updated {relativeTime(campaignUpdatedAt(active))}</span>
-          </div>
-          <h2 className="mt-1.5 text-[28px] font-semibold leading-tight sm:text-[32px]">{page.title}</h2>
-          {live ? (
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <CopyLinkButton path={path} label="Copy public link" />
-              <ButtonLink href={path} target="_blank" rel="noreferrer" variant="ghost" size="sm">
-                <Icon name="external" />
-                View live
-              </ButtonLink>
-            </div>
-          ) : (
-            <p className="mt-2 text-sm text-[var(--color-text-muted)]">Not published yet. Open the editor to publish.</p>
-          )}
-        </div>
-      </header>
-
-      <section aria-label="Supporters" className="rounded-2xl bg-white p-8 shadow-[var(--shadow-md)]">
-        <p className="text-sm font-medium text-[var(--color-text-muted)]">Total supporters</p>
-        <p className="mt-1 text-[64px] font-semibold leading-none tracking-[-0.03em]">
-          {active.metrics.supporters.toLocaleString()}
-        </p>
-        <p className="mt-3 text-sm text-[var(--color-text-muted)]">People who joined from your page in this browser.</p>
+      <section aria-label="Organization totals" className="grid gap-4 sm:grid-cols-2">
+        <StatCard
+          label="Active campaigns"
+          value={String(activeCount)}
+          hint="Published and still open."
+          count={activeCount}
+        />
+        <StatCard label="Draft campaigns" value={String(draftCount)} hint="Saved, and not published yet." />
+        <StatCard label="Closed campaigns" value={String(closedCount)} hint="Reached their goal. Fundraising has stopped." />
+        <StatCard
+          label="Total funds raised"
+          value={formatUsd(fundsRaised)}
+          hint="Amounts saved with your campaigns in this browser. No payment is collected."
+        />
+        <StatCard
+          label="Supporters"
+          value={supporters.toLocaleString("en-US")}
+          hint="People counted on your campaigns in this browser."
+        />
       </section>
 
-      {goal ? (
-        <CampaignGamifiedProgress type={goal.widget} currentAmount={goal.current} targetAmount={goal.target} goalType={goal.goalType} />
-      ) : null}
-
-      <ButtonLink href={`/preview?id=${active.id}`} size="lg" className="w-full sm:w-auto sm:min-w-[220px]">
-        <Icon name="edit" />
-        Edit Page
-      </ButtonLink>
-
-      <CampaignList state={state} activeId={active.id} />
+      {campaigns.length === 0 ? (
+        <div className="py-4 text-center" data-empty-campaigns>
+          <h2 className="text-[28px] font-semibold">You haven&apos;t created any campaigns yet.</h2>
+          <p className="mx-auto mt-2 max-w-md text-[15px] text-[var(--color-text-muted)]">
+            {websiteLive
+              ? "Your organization website is ready. Create a campaign when you want these numbers to grow."
+              : "Three quick steps: a headline and goal, an optional progress widget, then publish."}
+          </p>
+          <p className="mt-4 text-sm" data-campaign-count="0">
+            <span className="font-semibold">Website:</span> {websiteLive ? "Live" : "Not published yet"}
+          </p>
+          <ButtonLink href={newCampaignPath(state.organization.orgSlug)} size="lg" className="mt-6">
+            <Icon name="plus" />
+            Create Your First Campaign
+          </ButtonLink>
+        </div>
+      ) : (
+        <p className="text-sm text-[var(--color-text-muted)]">
+          <Link href="/campaigns" className="font-semibold text-[var(--color-primary)] hover:underline">
+            Open campaigns
+          </Link>{" "}
+          to edit a page.
+        </p>
+      )}
 
       <details className="group">
         <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-semibold text-[var(--color-text-muted)] hover:text-[var(--color-text)]">
@@ -254,13 +199,13 @@ export default function OverviewPage() {
           Settings &amp; Extras
         </summary>
         <ul className="mt-4 grid gap-1 sm:grid-cols-2">
-          {EXTRAS.map((x) => (
-            <li key={x.href}>
-              <Link href={x.href} className="flex items-center gap-3 rounded-xl p-3 transition hover:bg-[var(--color-bg)]">
-                <Icon name={x.icon} size={18} className="text-[var(--color-text-muted)]" />
+          {EXTRAS.map((item) => (
+            <li key={item.href}>
+              <Link href={item.href} className="flex items-center gap-3 rounded-xl p-3 transition hover:bg-[var(--color-bg)]">
+                <Icon name={item.icon} size={18} className="text-[var(--color-text-muted)]" />
                 <span>
-                  <span className="block text-sm font-semibold">{x.label}</span>
-                  <span className="block text-xs text-[var(--color-text-muted)]">{x.body}</span>
+                  <span className="block text-sm font-semibold">{item.label}</span>
+                  <span className="block text-xs text-[var(--color-text-muted)]">{item.body}</span>
                 </span>
               </Link>
             </li>

@@ -44,7 +44,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   const orgName = state.organization.name;
   const createHref = newCampaignPath(state.organization.orgSlug);
-  const creating = pathname === createHref;
+  const creating = pathname === "/open/campaign/new" || pathname === createHref;
 
   useEffect(() => {
     const previous = document.title;

@@ -137,6 +137,41 @@ export function isValidAdminEmail(email: string): boolean {
   return EMAIL_PATTERN.test(email.trim());
 }
 
+const LOGIN_HINT_KEY = "corise-org-login-hint-v1";
+
+export type OrgLoginHint = { slug: string; email: string; password: string };
+
+function readLoginHints(): Record<string, { email: string; password: string }> {
+  if (typeof window === "undefined") return {};
+  try {
+    const raw = sessionStorage.getItem(LOGIN_HINT_KEY);
+    if (!raw) return {};
+    const parsed = JSON.parse(raw) as unknown;
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) return {};
+    return parsed as Record<string, { email: string; password: string }>;
+  } catch {
+    return {};
+  }
+}
+
+/** Keeps the new admin email and password for this organization's sign-in screen in this tab. */
+export function saveOrgLoginHint(hint: OrgLoginHint): void {
+  try {
+    const hints = readLoginHints();
+    hints[hint.slug] = { email: hint.email, password: hint.password };
+    sessionStorage.setItem(LOGIN_HINT_KEY, JSON.stringify(hints));
+  } catch {
+    // The sign-in page still opens. The fields stay empty if storage is blocked.
+  }
+}
+
+export function readOrgLoginHint(slug: string | null): OrgLoginHint | null {
+  if (!slug) return null;
+  const saved = readLoginHints()[slug];
+  if (!saved || typeof saved.email !== "string" || typeof saved.password !== "string" || !saved.email || !saved.password) return null;
+  return { slug, email: saved.email, password: saved.password };
+}
+
 /** Demo-only hash. It keeps the password out of storage; it is not production authentication. */
 export async function hashPassword(password: string): Promise<string> {
   const data = new TextEncoder().encode(`corise-org-v1:${password}`);
@@ -289,6 +324,8 @@ export async function provisionOrganization(input: {
   } catch {
     return { ok: false, error: "Could not save this organization in the browser. Free some space and try again." };
   }
+
+  saveOrgLoginHint({ slug, email, password });
 
   return {
     ok: true,

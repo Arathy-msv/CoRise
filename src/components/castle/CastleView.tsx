@@ -5,7 +5,7 @@ import { useTweened } from "@/components/campaign/CampaignGamifiedProgress";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { onDemoFill } from "@/lib/demo-data";
-import { formatUsd, parsePledge, progressPercent, stageFor } from "@/lib/progress";
+import { formatUsd, parsePledge, progressPercent, stageFor, takePledge } from "@/lib/progress";
 import {
   CASTLE_BUILDERS,
   CASTLE_STAGE_IMAGES,
@@ -123,7 +123,7 @@ export function CastleView({
   current: number;
   target: number;
   prices?: Partial<CastlePrices>;
-  onPledge: (amount: number) => void;
+  onPledge: (amount: number) => number | false;
   /** Present when launched from the campaign details page — returns there. */
   onBack?: () => void;
   /** Present when the campaign offers both views — lets supporters switch to the plain Direct Pay form. */
@@ -241,8 +241,12 @@ export function CastleView({
       setAmountError(parsed.error);
       return;
     }
-    onPledge(parsed.amount);
-    setThanks(parsed.amount);
+    const taken = takePledge(parsed.amount, onPledge);
+    if (!taken.ok) {
+      setAmountError(taken.error);
+      return;
+    }
+    setThanks(taken.accepted);
     setCart(EMPTY_BUILD_CART);
     setCheckout(false);
   };

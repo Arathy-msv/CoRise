@@ -39,7 +39,7 @@ import {
   type PublishResult,
 } from "@/lib/impact-space/publish";
 import { buildOrgCampaign } from "@/lib/org-campaign";
-import { formatUsd, MAX_PLEDGE, validateOrgCampaignInput, type OrgCampaignErrors, type OrgCampaignInput } from "@/lib/progress";
+import { acceptedPledge, formatUsd, isCampaignClosed, validateOrgCampaignInput, type OrgCampaignErrors, type OrgCampaignInput } from "@/lib/progress";
 
 type PublishOptions = { silent?: boolean };
 
@@ -100,8 +100,8 @@ type CoriseContextValue = {
   recordParticipation: (campaignId: string) => void;
   /** Validates and immediately publishes a campaign under the organization. */
   createOrgCampaign: (input: OrgCampaignInput) => { ok: true; campaign: Campaign } | { ok: false; errors: OrgCampaignErrors };
-  /** Records a supporter's pledge (no payment is taken). */
-  recordPledge: (campaignId: string, amount: number) => void;
+  /** Records a supporter's pledge (no payment is taken). Returns 0 when the campaign is closed. */
+  recordPledge: (campaignId: string, amount: number) => { accepted: number; closed: boolean };
 };
 
 function applyOrgFromWebsiteDraft(s: CoriseDemoState, d: WebsiteWizardDraft) {
@@ -758,31 +758,35 @@ export function CoriseProvider({ children }: { children: ReactNode }) {
   }, [setState, showToast]);
 
   const recordParticipation = useCallback((campaignId: string) => {
-    setState((s) => ({
-      ...s,
-      activity: [
-        {
-          id: uid("act"),
-          type: "interaction" as const,
-          message: `A supporter joined ${s.campaigns.find((c) => c.id === campaignId)?.title ?? "a campaign"}`,
-          timeLabel: "Just now",
-          at: new Date().toISOString(),
-        },
-        ...s.activity,
-      ].slice(0, 30),
-      campaigns: s.campaigns.map((c) =>
-        c.id === campaignId
-          ? {
-              ...c,
-              metrics: {
-                ...c.metrics,
-                interactions: c.metrics.interactions + 1,
-                supporters: c.metrics.supporters + 1,
-              },
-            }
-          : c
-      ),
-    }));
+    setState((s) => {
+      const target = s.campaigns.find((c) => c.id === campaignId);
+      if (!target || (target.goalType === "participants" && isCampaignClosed(target))) return s;
+      return {
+        ...s,
+        activity: [
+          {
+            id: uid("act"),
+            type: "interaction" as const,
+            message: `A supporter joined ${target.title}`,
+            timeLabel: "Just now",
+            at: new Date().toISOString(),
+          },
+          ...s.activity,
+        ].slice(0, 30),
+        campaigns: s.campaigns.map((c) =>
+          c.id === campaignId
+            ? {
+                ...c,
+                metrics: {
+                  ...c.metrics,
+                  interactions: c.metrics.interactions + 1,
+                  supporters: c.metrics.supporters + 1,
+                },
+              }
+            : c
+        ),
+      };
+    });
   }, [setState]);
 
   const createOrgCampaign = useCallback(
@@ -820,37 +824,42 @@ export function CoriseProvider({ children }: { children: ReactNode }) {
   );
 
   const recordPledge = useCallback((campaignId: string, amount: number) => {
-    if (!Number.isInteger(amount) || amount <= 0 || amount > MAX_PLEDGE) return;
+    const target = stateRef.current.campaigns.find((c) => c.id === campaignId && c.status === "published" && !c.archived);
+    const accepted = target ? acceptedPledge(target, amount) : 0;
+    if (!target || accepted <= 0) return { accepted: 0, closed: target ? isCampaignClosed(target) : false };
+    let closed = false;
     setState((s) => {
-      const target = s.campaigns.find((c) => c.id === campaignId && c.status === "published" && !c.archived);
-      if (!target) return s;
+      const current = s.campaigns.find((c) => c.id === campaignId && c.status === "published" && !c.archived);
+      const take = current ? acceptedPledge(current, amount) : 0;
+      if (!current || take <= 0) return s;
+      const nextCampaign = {
+        ...current,
+        metrics: {
+          ...current.metrics,
+          pledged: (current.metrics.pledged ?? 0) + take,
+          interactions: current.metrics.interactions + 1,
+          supporters: current.metrics.supporters + 1,
+        },
+      };
+      closed = isCampaignClosed(nextCampaign);
       return {
         ...s,
         activity: [
           {
             id: uid("act"),
             type: "interaction" as const,
-            message: `A supporter pledged ${formatUsd(amount)} to ${target.title}`,
+            message: closed
+              ? `${current.title} reached its goal and is now closed`
+              : `A supporter pledged ${formatUsd(take)} to ${current.title}`,
             timeLabel: "Just now",
             at: new Date().toISOString(),
           },
           ...s.activity,
         ].slice(0, 30),
-        campaigns: s.campaigns.map((c) =>
-          c.id === campaignId
-            ? {
-                ...c,
-                metrics: {
-                  ...c.metrics,
-                  pledged: (c.metrics.pledged ?? 0) + amount,
-                  interactions: c.metrics.interactions + 1,
-                  supporters: c.metrics.supporters + 1,
-                },
-              }
-            : c
-        ),
+        campaigns: s.campaigns.map((c) => (c.id === campaignId ? nextCampaign : c)),
       };
     });
+    return { accepted, closed: closed || isCampaignClosed(stateRef.current.campaigns.find((c) => c.id === campaignId) ?? target) };
   }, [setState]);
 
   const value = useMemo(

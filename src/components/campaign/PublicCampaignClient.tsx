@@ -20,7 +20,7 @@ import { useCorise } from "@/context/CoriseContext";
 import { formatInr, percent } from "@/lib/format";
 import { findWorkspaceBySlug, type OrgWorkspace } from "@/lib/org-access";
 import { publicCampaignPath, publicOrgPath } from "@/lib/paths";
-import { campaignProgress, formatGoalValue, formatUsd, parsePledge, progressPercent } from "@/lib/progress";
+import { CAMPAIGN_CLOSED_MESSAGE, campaignProgress, formatGoalValue, formatUsd, isCampaignClosed, parsePledge, progressPercent } from "@/lib/progress";
 import type { Campaign } from "@/types/corise";
 import { CAMPAIGN_TYPE_META } from "@/types/corise";
 
@@ -110,6 +110,7 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
   }
 
   const goal = campaignProgress(campaign);
+  const closed = isCampaignClosed(campaign);
   const pledgeGoal = goal?.goalType === "amount";
   const isTreeGame = Boolean(goal && pledgeGoal && goal.widget === "tree");
   const isRaceGame = Boolean(goal && pledgeGoal && goal.widget === "race");
@@ -130,8 +131,11 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
           : undefined;
 
   /** The supporter has already chosen how to support — open the dedicated game or direct-pay page. */
-  if (isPlayableGame && launchMode && goal) {
-    const onPledge = (amount: number) => recordPledge(campaign.id, amount);
+  if (isPlayableGame && launchMode && goal && !closed) {
+    const onPledge = (amount: number): number | false => {
+      const result = recordPledge(campaign.id, amount);
+      return result.accepted > 0 ? result.accepted : false;
+    };
     const onBack = () => setLaunchMode(null);
     const payToggle = showToggle ? { onSwitch: () => { setSelectedMode("pay"); setLaunchMode("pay"); } } : undefined;
     const playToggle = showToggle ? { onSwitch: () => { setSelectedMode("play"); setLaunchMode("play"); }, label: playToggleLabel } : undefined;
@@ -227,8 +231,12 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
       setPledgeError(parsed.error);
       return;
     }
-    recordPledge(campaign.id, parsed.amount);
-    setPledged(parsed.amount);
+    const result = recordPledge(campaign.id, parsed.amount);
+    if (result.accepted <= 0) {
+      setPledgeError(CAMPAIGN_CLOSED_MESSAGE);
+      return;
+    }
+    setPledged(result.accepted);
     setPledgeError("");
     setPledgeInput("");
   };
@@ -289,7 +297,12 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
           ),
           whyItMatters: campaign.whyItMatters,
           whyShare: <SharePill prominent onClick={() => setShareOpen(true)} />,
-          widget: isPlayableGame ? (
+          widget: closed ? (
+            <div role="status" className="flex h-full flex-col justify-center gap-2 rounded-2xl border border-black/5 bg-white p-4 shadow-sm">
+              <p className="text-sm font-semibold">This campaign is closed</p>
+              <p className="text-sm text-[var(--color-text-muted)]">It reached its goal, so fundraising has stopped.</p>
+            </div>
+          ) : isPlayableGame ? (
             <div ref={launchRef} className="flex h-full flex-col justify-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm">
               <p className="text-sm font-semibold">How would you like to support?</p>
               {showToggle ? (
@@ -388,7 +401,12 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
               </p>
             </div>
           ) : undefined,
-          actionBox: isPlayableGame ? null : (
+          actionBox: closed ? (
+            <div role="status" className="rounded-2xl border border-black/5 bg-white p-4 text-sm shadow-sm">
+              <p className="font-semibold">Fundraising has stopped</p>
+              <p className="mt-1 text-[var(--color-text-muted)]">This campaign is closed because it reached its goal.</p>
+            </div>
+          ) : isPlayableGame ? null : (
             <div className="flex flex-col gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:gap-6">
               {pledgeGoal ? (
                 <form onSubmit={submitPledge} noValidate className="min-w-0 flex-1">

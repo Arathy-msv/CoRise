@@ -13,8 +13,15 @@ export function publicCampaignPath(campaignSlug: string, orgSlug?: string): stri
   return orgSlug ? `/org/${orgSlug}/${campaignSlug}` : `/campaign/${campaignSlug}`;
 }
 
+/** Campaign link that exists for every organization, including ones created after deploy. */
+export function shareCampaignPath(campaignSlug: string, orgSlug?: string): string {
+  const slug = encodeURIComponent(campaignSlug);
+  return orgSlug ? `/open/campaign/?org=${encodeURIComponent(orgSlug)}&slug=${slug}` : `/open/campaign/?slug=${slug}`;
+}
+
+/** Create-campaign page. A static file plus a query, so a new organization can open it after deploy. */
 export function newCampaignPath(orgSlug: string): string {
-  return `/org/${orgSlug}/campaigns/new`;
+  return `/open/campaign/new/?slug=${encodeURIComponent(orgSlug)}`;
 }
 
 /** Shareable sign-in page for one organization's admin. The password is never part of the URL. */

@@ -26,7 +26,9 @@ export default function CastlePage() {
         target={goal?.target ?? 1000}
         prices={campaign?.castlePrices}
         onPledge={(amount) => {
-          if (campaign) recordPledge(campaign.id, amount);
+          if (!campaign) return false;
+          const result = recordPledge(campaign.id, amount);
+          return result.accepted > 0 ? result.accepted : false;
         }}
       />
       <ToastHost />
