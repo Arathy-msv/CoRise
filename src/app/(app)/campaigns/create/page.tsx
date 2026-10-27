@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Field, Select, TextArea, TextInput } from "@/components/ui/Field";
 import { PublicLink } from "@/components/ui/PublicLink";
+import { InviteSupporters } from "@/components/campaign/InviteSupporters";
 import { useCorise } from "@/context/CoriseContext";
 import { buildCampaignFromPrompt, IDEA_EXAMPLE } from "@/lib/suggestions";
 import { formatInr } from "@/lib/format";
@@ -32,6 +33,7 @@ export default function CreateCampaignPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [publishedId, setPublishedId] = useState<string | null>(null);
+  const [inviting, setInviting] = useState(false);
   const [engagementTab, setEngagementTab] = useState<
     "quiz" | "sponsor" | "challenge" | "none"
   >("none");
@@ -77,6 +79,15 @@ export default function CreateCampaignPage() {
             <PublicLink path={publicCampaignPath(camp.slug, state.organization.orgSlug)} label="Public campaign link" />
           </div>
         ) : null}
+        {inviting ? (
+          <div className="text-left">
+            <InviteSupporters onBack={() => setInviting(false)} />
+          </div>
+        ) : (
+          <Button variant="secondary" onClick={() => setInviting(true)}>
+            Share with supporters
+          </Button>
+        )}
         <div className="flex flex-wrap justify-center gap-2 pt-1">
           <Button variant="secondary" onClick={() => camp && openAppPath(`/campaigns/${camp.id}`, router)}>
             Manage campaign
@@ -92,6 +103,7 @@ export default function CreateCampaignPage() {
             onClick={() => {
               clearDraft();
               setPublishedId(null);
+              setInviting(false);
               setPhase("create");
               setPrompt("");
             }}

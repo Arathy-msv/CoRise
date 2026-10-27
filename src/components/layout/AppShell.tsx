@@ -57,6 +57,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const primaryNav: NavItem[] = [
     { href: orgDashboardPath(state.organization.orgSlug), label: "Dashboard", icon: "home", match: ["/dashboard", "/overview"] },
     { href: "/campaigns", label: "Campaigns", icon: "megaphone", match: ["/campaigns/create"] },
+    { href: `/supporter?org=${encodeURIComponent(state.organization.orgSlug)}`, label: "Supporter view", icon: "users" },
   ];
 
   const moreNav: NavItem[] = [

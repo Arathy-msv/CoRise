@@ -1,12 +1,13 @@
 "use client";
 
-import { useSyncExternalStore } from "react";
+import { useState, useSyncExternalStore } from "react";
 import Link from "next/link";
 import { ButtonLink } from "@/components/ui/Button";
 import { CopyLinkButton } from "@/components/ui/CopyLinkButton";
 import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
 import { absoluteUrl } from "@/lib/public-asset";
+import { InviteSupporters } from "@/components/campaign/InviteSupporters";
 
 const noop = () => () => undefined;
 
@@ -40,6 +41,7 @@ export function PublishedModal({
   const origin = useSyncExternalStore(noop, () => window.location.origin, () => "");
   const url = origin ? absoluteUrl(path, origin) : path;
   const website = kind === "website";
+  const [inviting, setInviting] = useState(false);
 
   return (
     <Modal
@@ -64,19 +66,30 @@ export function PublishedModal({
           {website ? null : <CopyLinkButton path={path} variant="primary" />}
         </div>
 
-        {website ? null : (
-          <div className="flex flex-wrap gap-2" aria-label="Share">
-            {shareLinks(url, title).map((s) => (
-              <a
-                key={s.label}
-                href={s.href}
-                target="_blank"
-                rel="noreferrer"
-                className="rounded-full bg-[var(--color-bg)] px-3 py-1.5 text-[13px] font-medium transition hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary)]"
-              >
-                {s.label}
-              </a>
-            ))}
+        {website ? null : inviting ? (
+          <InviteSupporters onBack={() => setInviting(false)} />
+        ) : (
+          <div className="space-y-3">
+            <div className="flex flex-wrap gap-2" aria-label="Share">
+              {shareLinks(url, title).map((s) => (
+                <a
+                  key={s.label}
+                  href={s.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full bg-[var(--color-bg)] px-3 py-1.5 text-[13px] font-medium transition hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary)]"
+                >
+                  {s.label}
+                </a>
+              ))}
+            </div>
+            <button
+              type="button"
+              onClick={() => setInviting(true)}
+              className="w-full rounded-xl border border-[var(--color-border)] bg-white py-2.5 text-sm font-semibold text-[var(--color-text)] hover:bg-[var(--color-bg)]"
+            >
+              Share with supporters
+            </button>
           </div>
         )}
 

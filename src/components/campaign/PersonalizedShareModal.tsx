@@ -10,6 +10,7 @@ import {
   buildShareMessage,
 } from "@/lib/endorsement";
 import { withBasePath } from "@/lib/public-asset";
+import { InviteSupporters } from "@/components/campaign/InviteSupporters";
 
 const noop = () => () => undefined;
 
@@ -26,6 +27,7 @@ export function PersonalizedShareModal({
   const origin = useSyncExternalStore(noop, () => window.location.origin, () => "");
   const [note, setNote] = useState(DEFAULT_SHARE_NOTE);
   const [copied, setCopied] = useState(false);
+  const [inviting, setInviting] = useState(false);
   const link = buildPersonalizedShareUrl(origin, withBasePath(path), "", note);
   const message = buildShareMessage("", note, link);
   const encodedLink = encodeURIComponent(link);
@@ -92,7 +94,7 @@ export function PersonalizedShareModal({
         role="dialog"
         aria-modal="true"
         aria-labelledby="share-campaign-title"
-        className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl"
+        className="relative max-h-[min(92vh,760px)] w-full max-w-md overflow-y-auto rounded-2xl bg-white p-6 shadow-2xl"
       >
         <button
           type="button"
@@ -108,6 +110,12 @@ export function PersonalizedShareModal({
         </h2>
         <p className="mt-0.5 text-xs text-gray-500">Help spread the word with friends, family, and community.</p>
 
+        {inviting ? (
+          <div className="mt-4">
+            <InviteSupporters onBack={() => setInviting(false)} />
+          </div>
+        ) : (
+          <>
         <p className="mb-2 mt-5 text-[10px] font-bold uppercase tracking-wider text-amber-900/80">1-tap quick share</p>
         <div className="grid grid-cols-4 gap-2">
           {channels.map((channel) => (
@@ -173,6 +181,15 @@ export function PersonalizedShareModal({
           <span aria-hidden>{copied ? "✓" : "🔗"}</span>
           {copied ? "Link Copied!" : "Copy Shareable Link"}
         </button>
+        <button
+          type="button"
+          onClick={() => setInviting(true)}
+          className="mt-2 w-full rounded-xl border border-gray-300 bg-white py-2.5 text-xs font-semibold text-gray-800 hover:bg-gray-50"
+        >
+          Share with supporters
+        </button>
+          </>
+        )}
       </div>
     </div>
   );

@@ -144,6 +144,7 @@ export function appHomePath(mode: DeploymentMode, role: AppRole, orgSlug?: strin
   const r = effectiveRole(mode, role);
   if (r === "PLATFORM_ADMIN") return "/create";
   if (r === "ORG_ADMIN") return orgSlug ? `/dashboard/${encodeURIComponent(orgSlug)}` : "/dashboard";
+  if (r === "SUPPORTER") return "/supporter";
   return "/organizations";
 }
 
