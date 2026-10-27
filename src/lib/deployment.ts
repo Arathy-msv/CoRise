@@ -1,6 +1,7 @@
 import type { PlanId } from "@/config/plans";
 import type { Organization, OrgWebsite, ThemePreset } from "@/types/corise";
 import { THEME_COLORS } from "@/types/corise";
+import { orgDashboardPath } from "@/lib/paths";
 import { buildWebsiteFromSimpleInput } from "@/lib/website-suggestions";
 
 export type WebsiteStatus = "live" | "draft";
@@ -143,7 +144,7 @@ export function canCreateWebsite(mode: DeploymentMode, role: AppRole): boolean {
 export function appHomePath(mode: DeploymentMode, role: AppRole, orgSlug?: string): string {
   const r = effectiveRole(mode, role);
   if (r === "PLATFORM_ADMIN") return "/create";
-  if (r === "ORG_ADMIN") return orgSlug ? `/dashboard/${encodeURIComponent(orgSlug)}` : "/dashboard";
+  if (r === "ORG_ADMIN") return orgSlug ? orgDashboardPath(orgSlug) : "/dashboard";
   if (r === "SUPPORTER") return "/supporter";
   return "/organizations";
 }

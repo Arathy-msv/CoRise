@@ -1,7 +1,11 @@
-/** Public supporter URLs — no login required. */
+/**
+ * Public organization site. This is a real exported page plus a query, so a newly
+ * created organization still opens on GitHub Pages. `/org/:slug` only exists for
+ * sample organizations baked into the static build.
+ */
 export function publicOrgPath(orgSlug: string, opts?: { preview?: boolean }): string {
-  const base = `/org/${orgSlug}`;
-  return opts?.preview ? `${base}?preview=1` : base;
+  const slug = encodeURIComponent(orgSlug);
+  return opts?.preview ? `/open/org/?slug=${slug}&preview=1` : `/open/org/?slug=${slug}`;
 }
 
 /** Canonical campaign URL lives under the organization; `/campaign/:slug` stays as an alias. */
@@ -18,9 +22,17 @@ export function orgAdminLoginPath(orgSlug: string): string {
   return `/login?org=${encodeURIComponent(orgSlug)}`;
 }
 
-/** Organization admin dashboard. The path includes the organization's public identifier. */
+/** Organization admin dashboard. A static page, so new organizations open after deploy. */
 export function orgDashboardPath(orgSlug: string): string {
-  return `/dashboard/${encodeURIComponent(orgSlug)}`;
+  return `/open/dashboard/?slug=${encodeURIComponent(orgSlug)}`;
+}
+
+/** True when the browser is already on this organization's dashboard. */
+export function isOrgDashboardLocation(pathname: string, search: string, orgSlug: string): boolean {
+  const path = pathname.length > 1 && pathname.endsWith("/") ? pathname.slice(0, -1) : pathname;
+  const slug = new URLSearchParams(search).get("slug");
+  if (path === "/open/dashboard" && slug === orgSlug) return true;
+  return path === `/dashboard/${orgSlug}` || path === `/dashboard/${encodeURIComponent(orgSlug)}`;
 }
 
 /** Only same-origin relative paths are allowed as post-auth destinations. */

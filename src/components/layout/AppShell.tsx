@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [orgName]);
 
   const primaryNav: NavItem[] = [
-    { href: orgDashboardPath(state.organization.orgSlug), label: "Dashboard", icon: "home", match: ["/dashboard", "/overview"] },
+    { href: orgDashboardPath(state.organization.orgSlug), label: "Dashboard", icon: "home", match: ["/dashboard", "/overview", "/open/dashboard"] },
     { href: "/campaigns", label: "Campaigns", icon: "megaphone", match: ["/campaigns/create"] },
     { href: `/supporter?org=${encodeURIComponent(state.organization.orgSlug)}`, label: "Supporter view", icon: "users" },
   ];
