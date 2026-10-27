@@ -212,6 +212,7 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
             organizationName={campaign.organizationName}
             current={goal.current}
             target={goal.target}
+            prices={campaign.carePrices}
             onPledge={onPledge}
             onBack={onBack}
             payToggle={payToggle}

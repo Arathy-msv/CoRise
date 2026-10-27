@@ -1,14 +1,30 @@
 import type { ProgressStage } from "@/lib/progress";
+import type { CarePrices } from "@/types/corise";
 
 export type CareActionId = "water" | "fertilizer" | "sunlight";
 
 export type CareAction = { id: CareActionId; label: string; emoji: string; price: number; points: number };
 
-export const CARE_ACTIONS: CareAction[] = [
-  { id: "water", label: "Water", emoji: "💧", price: 50, points: 10 },
-  { id: "fertilizer", label: "Fertilizer", emoji: "🌱", price: 75, points: 15 },
-  { id: "sunlight", label: "Sunlight", emoji: "☀️", price: 25, points: 5 },
+export const DEFAULT_CARE_PRICES: CarePrices = { water: 50, fertilizer: 75, sunlight: 25 };
+
+const CARE_META: { id: CareActionId; label: string; emoji: string; points: number }[] = [
+  { id: "water", label: "Water", emoji: "💧", points: 10 },
+  { id: "fertilizer", label: "Fertilizer", emoji: "🌱", points: 15 },
+  { id: "sunlight", label: "Sunlight", emoji: "☀️", points: 5 },
 ];
+
+export const CARE_ACTIONS: CareAction[] = CARE_META.map((action) => ({ ...action, price: DEFAULT_CARE_PRICES[action.id] }));
+
+/** Care actions with this campaign's prices, falling back to the defaults. */
+export function careActions(prices?: Partial<CarePrices>): CareAction[] {
+  return CARE_META.map((action) => {
+    const price = prices?.[action.id];
+    return {
+      ...action,
+      price: Number.isFinite(price) && (price as number) > 0 ? Math.round(price as number) : DEFAULT_CARE_PRICES[action.id],
+    };
+  });
+}
 
 /** What the "Fill demo values" tile adds: one Sunlight, the $25 shown on the tile. */
 export const DEMO_CARE_ACTION: CareActionId = "sunlight";
@@ -17,12 +33,12 @@ export type CareCart = Record<CareActionId, number>;
 
 export const EMPTY_CART: CareCart = { water: 0, fertilizer: 0, sunlight: 0 };
 
-export function careAction(id: CareActionId): CareAction {
-  return CARE_ACTIONS.find((a) => a.id === id) ?? CARE_ACTIONS[0];
+export function careAction(id: CareActionId, prices?: Partial<CarePrices>): CareAction {
+  return careActions(prices).find((a) => a.id === id) ?? careActions(prices)[0];
 }
 
-export function cartTotal(cart: CareCart): number {
-  return CARE_ACTIONS.reduce((sum, a) => sum + a.price * cart[a.id], 0);
+export function cartTotal(cart: CareCart, prices?: Partial<CarePrices>): number {
+  return careActions(prices).reduce((sum, a) => sum + a.price * cart[a.id], 0);
 }
 
 export function cartActionCount(cart: CareCart): number {

@@ -7,8 +7,9 @@ import { GardenTree } from "@/components/garden/GardenTree";
 import { Button } from "@/components/ui/Button";
 import { Modal } from "@/components/ui/Modal";
 import { onDemoFill } from "@/lib/demo-data";
+import type { CarePrices } from "@/types/corise";
 import {
-  CARE_ACTIONS,
+  careActions,
   DEMO_CARE_ACTION,
   EMPTY_CART,
   GARDEN_STAGE_NAMES,
@@ -121,12 +122,14 @@ export function GardenCampaignView({
   onPledge,
   onBack,
   payToggle,
+  prices,
 }: {
   title: string;
   organizationName: string;
   current: number;
   target: number;
   onPledge: (amount: number) => void;
+  prices?: Partial<CarePrices>;
   /** Present when launched from the campaign details page — returns there. */
   onBack?: () => void;
   /** Present when the campaign offers both views — lets supporters switch to the plain Direct Pay form. */
@@ -165,7 +168,8 @@ export function GardenCampaignView({
     return () => window.clearTimeout(t);
   }, [unlocked]);
 
-  const total = cartTotal(cart);
+  const pricedActions = careActions(prices);
+  const total = cartTotal(cart, prices);
   const actions = cartActionCount(cart);
   const shownTotal = useTweened(total - hold, 500);
 
@@ -177,7 +181,7 @@ export function GardenCampaignView({
   };
 
   const care = (id: CareActionId, source: HTMLElement | null) => {
-    const action = careAction(id);
+    const action = careAction(id, prices);
     setCart((c) => addCare(c, id));
     setPoints((p) => p + action.points);
     setThanks(null);
@@ -392,10 +396,10 @@ export function GardenCampaignView({
               <span className="rounded-full bg-[#fde9a8] px-2 py-0.5 text-[10px] font-bold tracking-wide text-[#7a5a0a]">DEMO</span>
               Fill demo values
             </span>
-            <span className="mt-0.5 text-base font-bold">{formatUsd(careAction(DEMO_CARE_ACTION).price)}</span>
+            <span className="mt-0.5 text-base font-bold">{formatUsd(careAction(DEMO_CARE_ACTION, prices).price)}</span>
           </button>
 
-          {CARE_ACTIONS.map((a) => (
+          {pricedActions.map((a) => (
             <button
               key={a.id}
               type="button"
@@ -457,7 +461,7 @@ export function GardenCampaignView({
           <form onSubmit={confirm} noValidate className="space-y-4">
             {actions > 0 ? (
               <ul className="divide-y divide-black/5 rounded-xl bg-[#f7f5ef] px-4">
-                {CARE_ACTIONS.filter((a) => cart[a.id] > 0).map((a) => (
+                {pricedActions.filter((a) => cart[a.id] > 0).map((a) => (
                   <li key={a.id} className="flex items-center justify-between py-2.5 text-sm">
                     <span>
                       <span aria-hidden>{a.emoji}</span> {a.label} × {cart[a.id]}

@@ -166,6 +166,9 @@ export type GoalType = "amount" | "participants";
 /** How supporters experience the campaign's public page: the playable game, a direct payment form, or a toggle between both (game shown first). */
 export type PresentationMode = "game" | "direct_pay" | "both";
 
+/** Organizer-set dollar prices for Grow The Tree care actions. */
+export type CarePrices = { water: number; fertilizer: number; sunlight: number };
+
 /** Organizer-set dollar prices for the Retro Racer pit-stop actions. */
 export type PitPrices = { nitro: number; tire: number; tune: number };
 
@@ -213,6 +216,7 @@ export interface Campaign {
   goalTarget?: number;
   progressWidget?: ProgressWidget;
   presentationMode?: PresentationMode;
+  carePrices?: CarePrices;
   pitPrices?: PitPrices;
   shelterPrices?: ShelterPrices;
   campfirePrices?: CampfirePrices;
