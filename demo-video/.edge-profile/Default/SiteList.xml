@@ -1,0 +1,11 @@
+<?xml version="1.0"?>
+<site-list version="1.4">
+ <site url="emsl.microsoft.com">
+  <compat-mode>Default</compat-mode>
+  <open-in>IE11</open-in>
+ </site>
+ <site url="emsl.ppe.microsoft.com">
+  <compat-mode>Default</compat-mode>
+  <open-in>IE11</open-in>
+ </site>
+</site-list>

@@ -1,0 +1,103 @@
+{
+   "checksum": "86cf5d08898b03d2a24dba1d6f48ac6f",
+   "roots": {
+      "bookmark_bar": {
+         "children": [ {
+            "children": [ {
+               "date_added": "13422621157395955",
+               "date_last_used": "13422710470410602",
+               "guid": "bef9f8ed-8e10-41f3-8181-8e764828cc71",
+               "id": "9",
+               "name": "Pull requests - Repos",
+               "show_icon": false,
+               "source": "sync",
+               "type": "url",
+               "url": "https://dev.azure.com/oneCELA/MIE%20Expert%20-%20School%20Nomination%20system/_git/MS%20EDU%20Program%20Nomination%20Tool/pullrequests?_a=completed",
+               "visit_count": 5
+            }, {
+               "date_added": "13425625302494711",
+               "date_last_used": "0",
+               "guid": "ca6b7540-59e5-4954-9b6d-1e099de3c269",
+               "id": "10",
+               "name": "board",
+               "show_icon": false,
+               "source": "sync",
+               "type": "url",
+               "url": "https://dev.azure.com/oneCELA/MIE%20Expert%20-%20School%20Nomination%20system/_workitems/edit/535886",
+               "visit_count": 1
+            } ],
+            "date_added": "13422621178551317",
+            "date_last_used": "0",
+            "date_modified": "13425625302494711",
+            "guid": "e2a386fd-33b2-462c-bfba-03a3b7004208",
+            "id": "8",
+            "name": "MEE",
+            "source": "unknown",
+            "type": "folder"
+         }, {
+            "children": [  ],
+            "date_added": "13425625323318624",
+            "date_last_used": "0",
+            "date_modified": "13425625323318624",
+            "guid": "2e9faafd-602b-4795-a931-d8ec9af8f4e1",
+            "id": "11",
+            "name": "New folder",
+            "source": "unknown",
+            "type": "folder"
+         } ],
+         "date_added": "13437579720652363",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "0bc5d13f-2cba-5d74-951f-3f233fe6c908",
+         "id": "1",
+         "name": "Favorites bar",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "other": {
+         "children": [ {
+            "children": [  ],
+            "date_added": "13422621178551642",
+            "date_last_used": "0",
+            "date_modified": "13422621178551642",
+            "guid": "4e78b287-f028-4ef0-9dfb-7b7f7dc963e5",
+            "id": "7",
+            "name": "New folder",
+            "source": "unknown",
+            "type": "folder"
+         } ],
+         "date_added": "13437579720652363",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "82b081ec-3dd3-529c-8475-ab6c344590dd",
+         "id": "2",
+         "name": "Other favorites",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "synced": {
+         "children": [  ],
+         "date_added": "13437579720652363",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "4cf2e351-0e85-532b-bb37-df045d8f8d0f",
+         "id": "3",
+         "name": "Mobile favorites",
+         "source": "unknown",
+         "type": "folder"
+      },
+      "workspaces_v2": {
+         "children": [  ],
+         "date_added": "13437579720652363",
+         "date_last_used": "0",
+         "date_modified": "0",
+         "guid": "75aa6670-344f-549d-b742-660f029506ab",
+         "id": "5",
+         "name": "Workspaces",
+         "source": "unknown",
+         "type": "folder"
+      }
+   },
+   "sync_metadata": "CpsBCh4IiIECEggEh299oQEAACoOEAAYASAAKAQwADgAQAASABpYQW81aXp0YU40ajJUbU5MWExvbGtsRDBiMGQ5b05WN01LUVVLMklRVDh3a0FKRG5rY0xOU3dJeTk2YjIxMjBCeWwwTzMvWVRiNitPVk41OTFPbVhMcVE9PSoYYjB3YVZzdHFFNksreGpTNXdjRjRqZz09SAOgBgwSjAEIAxKHAQocbmpnRHU4OGVDcnZYcDg2cEQ3ZkhHY3FGcDg4PRIkZTRmZWQxNDQtNjcyYi01NmE5LWJkYTItZmIyNDAzODM5YzQ5GAAgACgAMLfavYvgMzjLpr+L4DNAy6a/i+AzShx5ek5CMDFjbjU0QTdjUlUwdVQrL1BnbVR0VW89ZQAAAADCPgJgABKsAQgKEqcBChxjODMxSjBHNy94WkNzSkFwRE9jSEsyWVlNMWc9EiRjYTZiNzU0MC01OWU1LTQ5NTQtOWI2ZC0xZTA5OWRlM2MyNjkYACAAKAAw2fCpp+szOKPbqKfrM0Cj26in6zNKHGZuUmtnelgrbENqamErcUtac2VnY1BQdCtqYz1aHiIccEVIVkIvRzB1VE1HVnRNVkliQUprSlVPUCs0PWX8p1khwj4CYAUSrAEICRKnAQocVUZvamRZeGczQTFzbnZPd0xoUno1eE5ZSzhJPRIkYmVmOWY4ZWQtOGUxMC00MWYzLTgxODEtOGU3NjQ4MjhjYzcxGAAgACgAMIf25oLrMzjInOqO4DNAyJzqjuAzShx6aThiZnBPWXROeUtaTTZKaWd3Wko1SC9iZG89Wh4iHFd1UWtRKy8rZ21QV3haQlRId0g4TldnUGIrOD1l/KdZIcI+AmAFEowBCAEShwEKHHl4Si82ZnZrZWNyN2twNUVRekI0dFdMcGRiRT0SJDkwOGI0NTU3LTdkNmQtNWE0My05YjFjLTFiZDIxYmUyYTE0ZBgAIAAoADCw2r2L4DM4qY2/i+AzQKmNv4vgM0ocYVJDV0xnaEY5YjVJbnFLSUR2dUovanZRa0ZjPWUAAAAAwj4CYAASrQEICBKoAQocRHI1MkNGK1JQWncxa1lQWmJVTG5PQWtkdWlVPRIkZTJhMzg2ZmQtMzNiMi00NjJjLWJmYmEtMDNhM2I3MDA0MjA4GAAgACgAMNC6647gMzi5x+uO4DNAucfrjuAzShx4REhGUVhVTGZLVUpxbWdLY09qcGVpLzByNFU9Wh8iHas0bGR5RGRFKzVUR3NIOG01YXF5dy9ZaXRlMk09ZQAAAADCPgJgABKMAQgCEocBChxZY1NUb252RVNQd3FDczRMMmNyVmh2NjhMOTg9EiRmYjQzYzgxMC00NzQyLTVmZjctOWNiMi03ZGRmMzU1NmFkZWMYACAAKAAwsdq9i+AzOKGVv4vgM0Chlb+L4DNKHG9QVmtod0JSYlY2NUtDV1IyK0lPTkhXb091OD1lAAAAAMI+AmAAEqwBCAcSpwEKHE02ODhzbTdncW5DK1hxRVpXWmZmVlR3bTRHQT0SJDRlNzhiMjg3LWYwMjgtNGVmMC05ZGZiLTdiN2Y3ZGM5NjNlNRgAIAAoADDPuuuO4DM4t8XrjuAzQLfF647gM0ocMlcvYytzNTlKaTZpVlg3dS9laW9hbytIQ2hZPVoeIhxMSk56WiszT3NPMW5Xa3ltMHRUdmxFdXR0QTA9ZQAAAADCPgJgABKtAQgLEqgBChxUbE9DemhHMFN2YXREOUt0bmxOL2NKNTVhekE9EiQyZTlmYWFmZC02MDJiLTQ3OTUtYTkzMS1kOGVjOWFmOGY0ZTEYACAAKAAw2vCpp+szOKr3qafrM0Cq96mn6zNKHEhRY3hhZjdReTMzL2hIblNrcFE1WEpSUVdSZz1aHyId1St4Z2hrZ0RVWDlIRTIxazdOaTN3ZHlXOFJGTT1lAAAAAMI+AmAAEowBCAUShwEKHHdSQnJaTCs2UEE5YXZLZ2pOUDdKWERMY2Z2cz0SJDBjOThmYTAxLTM5YWUtNWE5MC04OWFmLWVmZTM3OWVhNzMyMhgAIAAoADC22r2L4DM45Z+/i+AzQOWfv4vgM0ocbm14NjVzUUR2eEk4VGdFZXYrQStudHRvU240PWUAAAAAwj4CYAAwADgA",
+   "version": 1
+}

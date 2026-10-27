@@ -1,0 +1,1 @@
+This is the organization dashboard. It shows active campaigns, drafts, funds raised, and supporters. The organization admin creates a campaign.

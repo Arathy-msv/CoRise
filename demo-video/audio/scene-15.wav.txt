@@ -1,0 +1,1 @@
+Coming next is the supporter dashboard. A supporter joins a campaign, writes their own note, and sees a leadership board with the amount raised.

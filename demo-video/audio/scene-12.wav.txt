@@ -1,0 +1,1 @@
+The admin shares the campaign with supporters by email. They select people and send a demo invitation. No real email is sent.

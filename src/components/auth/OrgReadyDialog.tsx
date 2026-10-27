@@ -136,7 +136,8 @@ export function OrgReadyDialog({ result, onClose }: { result: ProvisionSuccess; 
             <Link
               href={result.adminPath}
               onClick={() => saveOrgLoginHint({ slug: result.slug, email: result.email, password: result.password })}
-              className="flex flex-1 items-center justify-center rounded-xl bg-[#183B2E] py-2.5 text-center text-xs font-semibold text-white hover:bg-[#122D23] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B2E]"
+              className="flex flex-1 items-center justify-center rounded-xl bg-[#183B2E] py-2.5 text-center text-sm font-semibold !text-white hover:bg-[#122D23] hover:!text-white focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#183B2E]"
+              style={{ color: "#ffffff" }}
             >
               Go to Admin Dashboard
             </Link>

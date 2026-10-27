@@ -1,0 +1,1 @@
+Publishing asks who will manage the organization. The platform admin enters the organization admin name and email. Corise creates a password for them.

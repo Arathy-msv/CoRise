@@ -1,0 +1,1 @@
+The organization admin sign-in already shows that email and password. The credential button can fill them again. Then the admin signs in.

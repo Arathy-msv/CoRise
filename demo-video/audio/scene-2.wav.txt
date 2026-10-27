@@ -1,0 +1,1 @@
+In SaaS Edition there are four roles. We continue as Platform Admin. This person creates organization websites. The organization admin, supporter, and visitor each have their own view.

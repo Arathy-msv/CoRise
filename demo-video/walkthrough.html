@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Corise SaaS walkthrough</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin: 0; width: 1280px; height: 720px; overflow: hidden; font-family: "Segoe UI", sans-serif; background: #090d19; color: #17211c; }
+    [data-scene] { display: none; width: 1280px; height: 720px; position: relative; }
+    [data-scene].on { display: block; }
+    .cap {
+      position: absolute; left: 28px; right: 28px; bottom: 22px; z-index: 5;
+      background: #183b2e; color: #fff; border-radius: 16px; padding: 16px 22px;
+      font-size: 26px; font-weight: 650; line-height: 1.35;
+    }
+    .hand {
+      position: absolute; z-index: 6; font-size: 120px; line-height: 1;
+      filter: drop-shadow(0 10px 8px rgba(0,0,0,.5));
+      pointer-events: none;
+    }
+    .navy { background: #090d19; color: #fff; }
+    .ivory { background: #f7f5ef; }
+    h1 { margin: 0; }
+    .cards { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; width: 980px; margin: 70px auto 0; }
+    .card { border: 1px solid #243044; border-radius: 18px; padding: 28px; background: #10182a; min-height: 360px; }
+    .card h2 { margin: 12px 0 6px; font-size: 32px; }
+    .muted { color: #b7c0cc; font-size: 18px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; height: 52px; padding: 0 18px;
+      border-radius: 12px; font-size: 18px; font-weight: 700; border: 0;
+    }
+    .green { background: #43e58a; color: #090d19; }
+    .forest { background: #183b2e; color: #fff; }
+    .outline { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.3); }
+    .roles { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; width: 1040px; margin: 28px auto 0; }
+    .role { border: 1px solid #243044; border-radius: 18px; padding: 22px 24px; background: #10182a; min-height: 168px; }
+    .role strong { display: block; font-size: 34px; margin-top: 6px; }
+    .role.focus { outline: 4px solid #43e58a; }
+    .center { width: 760px; margin: 54px auto 0; text-align: center; }
+    .center h1 { font-size: 46px; line-height: 1.15; }
+    textarea, input.big {
+      width: 100%; border-radius: 16px; border: 1px solid #243044; background: #10182a; color: #fff;
+      font-size: 20px; padding: 16px 18px; font-family: inherit;
+    }
+    .chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 14px; }
+    .chip { border: 1px solid #43e58a; color: #fff; border-radius: 999px; padding: 8px 12px; font-size: 16px; }
+    .topbar { height: 72px; background: #fff; display: flex; align-items: center; justify-content: space-between; padding: 0 28px; color: #17211c; }
+    .preview { margin: 22px 48px; background: #fff; border-radius: 18px; overflow: hidden; height: 430px; box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+    .hero { height: 180px; background: linear-gradient(120deg, #1f4d34, #43e58a); color: #fff; padding: 28px 32px; }
+    .hero h2 { margin: 8px 0 0; font-size: 36px; }
+    .modal {
+      position: absolute; left: 250px; top: 70px; width: 780px; background: #fff; color: #17211c;
+      border-radius: 18px; padding: 28px; box-shadow: 0 24px 60px rgba(0,0,0,.35);
+    }
+    .modal h2 { font-size: 32px; margin-bottom: 8px; }
+    .row { display: flex; gap: 12px; margin-top: 14px; }
+    .row .btn { flex: 1; }
+    .field { background: #faf6f0; border-radius: 12px; padding: 12px 14px; margin-top: 8px; font-size: 18px; }
+    label.lbl { display: block; font-size: 15px; font-weight: 700; margin-top: 12px; }
+    input.light { width: 100%; height: 48px; border-radius: 10px; border: 1px solid #d9d3c8; font-size: 18px; padding: 0 12px; }
+    .dash { width: 860px; margin: 28px auto 0; }
+    .statgrid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 16px; }
+    .stat { background: #fff; border-radius: 16px; padding: 18px 20px; }
+    .stat b { display: block; font-size: 40px; margin-top: 4px; }
+    .orghead { background: #183b2e; color: #fff; border-radius: 16px; padding: 22px 24px; display: flex; justify-content: space-between; align-items: center; }
+    .form { width: 860px; margin: 24px auto 0; background: #fff; border-radius: 18px; padding: 22px 26px; }
+    .choices { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; margin-top: 14px; }
+    .choice { border: 2px solid #e4e0d8; border-radius: 14px; padding: 16px; font-size: 18px; }
+    .choice.on { border-color: #183b2e; background: #e7f1e2; }
+    .share { width: 720px; margin: 80px auto 0; background: #fff; border-radius: 18px; padding: 26px; }
+    .person { display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #eee; font-size: 18px; }
+    .public { width: 980px; margin: 24px auto 0; background: #fff; border-radius: 18px; overflow: hidden; }
+    .pay { width: 520px; margin: 36px auto 0; background: #fff; border-radius: 22px; padding: 26px; }
+    .amounts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin: 12px 0; }
+    .amt { border: 2px solid #1f4d34; background: #eef3e8; border-radius: 12px; padding: 10px; text-align: center; font-weight: 700; }
+    .board { margin-top: 12px; font-size: 18px; }
+    .board div { display: flex; justify-content: space-between; padding: 6px 0; }
+    .you { color: #183b2e; font-weight: 800; }
+  </style>
+</head>
+<body>
+  <section data-scene="1" class="navy">
+    <div class="cards">
+      <div class="card">
+        <div style="font-size:36px">☁️</div>
+        <h2>SaaS Edition <span class="muted" style="font-size:18px">(Cloud)</span></h2>
+        <p class="muted">Multi-tenant cloud workspace. Platform admin, organization admin, supporter, and visitor.</p>
+        <div style="margin-top:28px"><span class="btn green">Start Cloud Workspace</span></div>
+      </div>
+      <div class="card">
+        <div style="font-size:36px">🏢</div>
+        <h2>Licensed Edition <span class="muted" style="font-size:18px">(Self-Hosted)</span></h2>
+        <p class="muted">Private deployment. No platform admin. The organization owns the workspace.</p>
+        <div style="margin-top:28px"><span class="btn outline">Deploy Local License</span></div>
+      </div>
+    </div>
+    <div class="hand" style="left:150px;top:300px">👆</div>
+    <div class="cap">SaaS Edition has four roles: platform admin, organization admin, supporter, and visitor.</div>
+  </section>
+
+  <section data-scene="2" class="navy">
+    <p style="width:1040px;margin:36px auto 0;color:#43e58a;font-weight:700">SaaS Edition</p>
+    <h1 style="width:1040px;margin:8px auto 0;font-size:40px">Who are you signing in as?</h1>
+    <div class="roles">
+      <div class="role focus"><span>☁️</span><strong>Platform Admin</strong><span class="muted">Creates organization websites and shares sign-in details.</span></div>
+      <div class="role"><span>🏛️</span><strong>Organization Admin</strong><span class="muted">Signs in and creates campaigns.</span></div>
+      <div class="role"><span>🤝</span><strong>Supporter</strong><span class="muted">Joins campaigns and sees the board.</span></div>
+      <div class="role"><span>👀</span><strong>Visitor</strong><span class="muted">Opens the public page and contributes.</span></div>
+    </div>
+    <div class="hand" style="left:180px;top:210px">👆</div>
+    <div class="cap">The platform admin signs in first. This role creates the organization website.</div>
+  </section>
+
+  <section data-scene="3" class="navy">
+    <div class="center">
+      <h1>Create your organization's website</h1>
+      <p class="muted">Campaigns are added later, by the organization admin.</p>
+      <textarea rows="4" readonly>Riverside Student Club brings students and families together for service projects, school events, and learning that strengthens our community.</textarea>
+      <div class="chips"><span class="chip">🏫 School or Student Club</span><span class="chip" style="opacity:.6">🌱 Environmental Non-Profit</span></div>
+      <div style="margin-top:22px"><span class="btn green" style="width:100%">Build Organization Website</span></div>
+    </div>
+    <div class="hand" style="left:620px;top:500px">👆</div>
+    <div class="cap">The platform admin chooses Riverside Student Club and builds the website.</div>
+  </section>
+
+  <section data-scene="4" class="ivory">
+    <div class="topbar"><strong>Corise</strong><span>Riverside Student Club · Draft</span><span class="btn forest">Publish</span></div>
+    <div class="preview">
+      <div class="hero"><div>Riverside Student Club</div><h2>Students serving our neighborhood</h2><p>Service projects, school events, and learning together.</p></div>
+      <div style="padding:22px 32px"><h3 style="margin:0 0 8px">Campaigns</h3><p class="muted" style="color:#5c675f">No campaigns yet. The organization admin adds them after sign-in.</p></div>
+    </div>
+    <div class="hand" style="left:1040px;top:36px">👆</div>
+    <div class="cap">This is the website preview. The platform admin publishes it. No campaign is created yet.</div>
+  </section>
+
+  <section data-scene="5" class="ivory">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,.35)"></div>
+    <div class="modal">
+      <h2>Who will manage this organization?</h2>
+      <p class="muted" style="color:#5c675f">They sign in with this email. Corise creates a password you can share.</p>
+      <label class="lbl">Organization admin name</label>
+      <input class="light" readonly value="Asha Menon" />
+      <label class="lbl">Admin email</label>
+      <input class="light" readonly value="asha@riverside.demo" />
+      <div style="margin-top:16px"><span class="btn forest" style="width:100%">Create organization</span></div>
+    </div>
+    <div class="hand" style="left:700px;top:400px">👆</div>
+    <div class="cap">The platform admin names the organization admin and saves their email.</div>
+  </section>
+
+  <section data-scene="6" class="ivory">
+    <div style="position:absolute;inset:0;background:rgba(0,0,0,.35)"></div>
+    <div class="modal">
+      <h2>Your Website is Ready! 🎉</h2>
+      <p class="muted" style="color:#5c675f">Public website and admin sign-in. Keep the password safe.</p>
+      <div class="field">http://localhost:3001/open/org/?slug=riverside-student-club</div>
+      <div class="row">
+        <span class="btn outline" style="color:#17211c;border-color:#ccc">Open public Website</span>
+        <span class="btn forest">Go to Admin Dashboard</span>
+      </div>
+      <div class="field">Email: asha@riverside.demo<br>Password: •••••••••••</div>
+    </div>
+    <div class="hand" style="left:760px;top:250px">👆</div>
+    <div class="cap">The site is ready. The public link, email, and password are here. Open the admin dashboard.</div>
+  </section>
+
+  <section data-scene="7" class="ivory">
+    <div style="width:480px;margin:70px auto 0;background:#fff;border-radius:18px;padding:28px;box-shadow:0 8px 24px rgba(0,0,0,.06)">
+      <h1 style="font-size:32px">Organization sign in</h1>
+      <p class="muted" style="color:#5c675f">Sign in to manage Riverside Student Club.</p>
+      <button style="width:100%;text-align:left;margin-top:16px;border:1px solid #d9d3c8;background:#e7f1e2;border-radius:12px;padding:14px 16px">
+        <strong style="font-size:20px">Organization admin</strong><br>asha@riverside.demo<br><span style="color:#183b2e;font-weight:700">Click to fill email and password</span>
+      </button>
+      <label class="lbl">Email</label>
+      <input class="light" readonly value="asha@riverside.demo" />
+      <label class="lbl">Password</label>
+      <input class="light" readonly value="•••••••••••" />
+      <div style="margin-top:16px"><span class="btn forest" style="width:100%">Sign In</span></div>
+    </div>
+    <div class="hand" style="left:700px;top:200px">👆</div>
+    <div class="cap">The organization admin's email and password are already filled in. The credential button can fill them again.</div>
+  </section>
+
+  <section data-scene="8" class="ivory">
+    <div class="dash">
+      <div class="orghead"><div><div style="opacity:.8;font-size:13px">ORGANIZATION DASHBOARD</div><h1 style="font-size:32px">Riverside Student Club</h1></div><span class="btn green">New Campaign</span></div>
+      <div class="statgrid">
+        <div class="stat">Active campaigns<b>0</b></div>
+        <div class="stat">Draft campaigns<b>0</b></div>
+        <div class="stat">Total funds raised<b>$0</b></div>
+        <div class="stat">Supporters<b>0</b></div>
+      </div>
+    </div>
+    <div class="hand" style="left:900px;top:40px">👆</div>
+    <div class="cap">The organization admin sees the dashboard, then creates a campaign.</div>
+  </section>
+
+  <section data-scene="9" class="ivory">
+    <div class="form">
+      <h1 style="font-size:32px">Create a campaign</h1>
+      <p>1 Title and goal · 2 Donation setup · 3 Publish</p>
+      <label class="lbl">Headline</label>
+      <input class="light" readonly value="Plant trees with Riverside students" />
+      <label class="lbl">Description</label>
+      <input class="light" readonly value="Help our student club plant trees and care for the school garden." />
+      <label class="lbl">Target amount</label>
+      <input class="light" readonly value="500" style="max-width:220px" />
+      <div style="text-align:right;margin-top:16px"><span class="btn forest">Next: Donation setup</span></div>
+    </div>
+    <div class="hand" style="left:900px;top:460px">👆</div>
+    <div class="cap">The campaign has a headline, a description, and a five hundred dollar goal.</div>
+  </section>
+
+  <section data-scene="10" class="ivory">
+    <div class="form">
+      <h1 style="font-size:30px">How can people donate?</h1>
+      <div class="choices">
+        <div class="choice">💳 Direct Pay<br><span class="muted" style="color:#5c675f">A straightforward contribution.</span></div>
+        <div class="choice">🎮 Play a Game<br><span class="muted" style="color:#5c675f">Actions in the garden game.</span></div>
+        <div class="choice on">💳🎮 Both<br><span class="muted" style="color:#5c675f">The visitor chooses.</span></div>
+      </div>
+      <div style="text-align:right;margin-top:22px"><span class="btn forest">Next: Review and Publish</span></div>
+    </div>
+    <div class="hand" style="left:700px;top:160px">👆</div>
+    <div class="cap">People can play a game or contribute directly. This campaign allows both.</div>
+  </section>
+
+  <section data-scene="11" class="ivory">
+    <div class="form">
+      <h1 style="font-size:32px">Ready to publish</h1>
+      <p><b>Headline.</b> Plant trees with Riverside students</p>
+      <p><b>Goal.</b> $500</p>
+      <p><b>Ways to help.</b> Game and direct contribution</p>
+      <div style="margin-top:18px"><span class="btn forest">Publish campaign</span></div>
+    </div>
+    <div class="hand" style="left:240px;top:300px">👆</div>
+    <div class="cap">The organization admin publishes the campaign and gets a public link to share.</div>
+  </section>
+
+  <section data-scene="12" class="ivory">
+    <div class="share">
+      <h1 style="font-size:30px">Your page is live</h1>
+      <div class="field">/open/campaign/?org=riverside-student-club&slug=plant-trees</div>
+      <p style="margin-top:12px"><span class="chip" style="color:#17211c;border-color:#ddd">Email</span> <span class="chip" style="color:#17211c;border-color:#ddd">WhatsApp</span></p>
+      <h2 style="font-size:22px;margin-bottom:6px">Share with supporters</h2>
+      <div class="person"><span>☑ Jan M. · jan.m@example.com</span></div>
+      <div class="person"><span>☑ Maya K. · maya.k@example.com</span></div>
+      <div class="person"><span>☑ Rahul S. · rahul.s@example.com</span></div>
+      <div style="margin-top:14px"><span class="btn forest" style="width:100%">Send invitations (12)</span></div>
+      <p class="muted" style="color:#5c675f">Ready for 12 people. No email was sent. This is a demo.</p>
+    </div>
+    <div class="hand" style="left:680px;top:430px">👆</div>
+    <div class="cap">The admin shares the campaign with supporters by email. The invitation is a demo. No real mail is sent.</div>
+  </section>
+
+  <section data-scene="13" class="ivory">
+    <div class="public">
+      <div class="hero"><div>Riverside Student Club</div><h2 style="font-size:32px">Plant trees with Riverside students</h2></div>
+      <div style="padding:22px 28px">
+        <h3 style="margin:0 0 10px">How would you like to support?</h3>
+        <div class="choices">
+          <div class="choice">🎮 Play the game</div>
+          <div class="choice on">💳 Direct pay</div>
+        </div>
+        <div style="margin-top:16px"><span class="btn forest">Continue</span></div>
+        <p class="muted" style="color:#5c675f">Pledge only. No payment is taken. Recorded in this browser.</p>
+      </div>
+    </div>
+    <div class="hand" style="left:560px;top:330px">👆</div>
+    <div class="cap">A visitor opens the public page and can play the game or contribute directly.</div>
+  </section>
+
+  <section data-scene="14" class="ivory">
+    <div class="pay">
+      <p class="muted" style="color:#5c675f">RIVERSIDE STUDENT CLUB</p>
+      <h1 style="font-size:30px">Plant trees with Riverside students</h1>
+      <p><b>$0</b> of $500 · 0%</p>
+      <p style="font-weight:700">Choose an amount</p>
+      <div class="amounts"><div class="amt">$10</div><div class="amt">$25</div><div class="amt">$50</div><div class="amt">$100</div></div>
+      <span class="btn forest" style="width:100%">Pay now</span>
+      <p style="background:#e7f1e2;color:#1f4d34;border-radius:12px;padding:10px 12px;font-weight:700">Thank you! Your $25 contribution was recorded.</p>
+    </div>
+    <div class="hand" style="left:620px;top:360px">👆</div>
+    <div class="cap">The visitor contributes twenty-five dollars. It is a demo. No real payment is collected.</div>
+  </section>
+
+  <section data-scene="15" class="ivory">
+    <div class="dash">
+      <div class="orghead"><div><div style="opacity:.8;font-size:13px">SUPPORTER VIEW · COMING NEXT</div><h1 style="font-size:32px">Riverside Student Club</h1></div></div>
+      <div class="stat" style="margin-top:16px">
+        <div style="font-size:14px;font-weight:700;color:#183b2e">JOINED · CLOSED when the goal is reached</div>
+        <h2 style="margin:6px 0">Plant trees with Riverside students</h2>
+        <p>Your note: I will share this with my class.</p>
+        <p class="muted" style="color:#5c675f">Amount you raised</p>
+        <b style="font-size:36px">$25</b>
+        <div class="board">
+          <div><span>#1 Rahul S.</span><span>$200</span></div>
+          <div class="you"><span>#2 You</span><span>$25</span></div>
+          <div><span>#3 Maya K.</span><span>$90</span></div>
+        </div>
+        <div style="margin-top:10px"><span class="btn forest">Edit note</span></div>
+      </div>
+    </div>
+    <div class="hand" style="left:280px;top:500px">👆</div>
+    <div class="cap">Coming next: supporters join with their own note and see a leadership board.</div>
+  </section>
+  <script>
+    const scene = new URLSearchParams(location.search).get("scene") || "1";
+    const node = document.querySelector('[data-scene="' + scene + '"]');
+    if (node) node.classList.add("on");
+  </script>
+</body>
+</html>

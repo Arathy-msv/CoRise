@@ -1,0 +1,1 @@
+Welcome to Corise. This is the live site. Choose SaaS Edition to open the cloud workspace. Licensed Edition is the self-hosted option.
