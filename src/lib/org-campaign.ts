@@ -3,6 +3,7 @@ import { defaultChallenge, defaultPoll, defaultQuiz, defaultSponsor } from "@/li
 import { detectTopic } from "@/lib/impact-space/topics";
 import { slugify, uid } from "@/lib/format";
 import { isPlayableWidget, parseGoalTarget, type OrgCampaignInput } from "@/lib/progress";
+import { careActions, DEFAULT_CARE_PRICES } from "@/lib/garden";
 import { DEFAULT_PIT_PRICES, pitActions } from "@/lib/racer";
 import { DEFAULT_SHELTER_PRICES, petActions } from "@/lib/shelter";
 import { DEFAULT_CAMPFIRE_PRICES, campActions } from "@/lib/campfire";
@@ -51,6 +52,9 @@ export function buildOrgCampaign(input: OrgCampaignInput, organization: Organiza
     goalTarget: target,
     progressWidget: input.widget,
     presentationMode: isPlayableWidget(input.widget) ? input.presentationMode : "game",
+    ...(input.widget === "tree"
+      ? { carePrices: careActions(input.carePrices).reduce((p, a) => ({ ...p, [a.id]: a.price }), { ...DEFAULT_CARE_PRICES }) }
+      : {}),
     ...(input.widget === "race" ? { pitPrices: pitActions(input.pitPrices).reduce((p, a) => ({ ...p, [a.id]: a.price }), { ...DEFAULT_PIT_PRICES }) } : {}),
     ...(input.widget === "castle"
       ? { castlePrices: buildActions(input.castlePrices).reduce((p, a) => ({ ...p, [a.id]: a.price }), { ...DEFAULT_CASTLE_PRICES }) }

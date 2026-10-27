@@ -1,4 +1,4 @@
-import type { Campaign, CampfirePrices, CastlePrices, GoalType, PitPrices, PresentationMode, ProgressWidget, ShelterPrices } from "@/types/corise";
+import type { Campaign, CampfirePrices, CarePrices, CastlePrices, GoalType, PitPrices, PresentationMode, ProgressWidget, ShelterPrices } from "@/types/corise";
 
 export const PRESENTATION_MODES: { id: PresentationMode; label: string; tagline: string }[] = [
   { id: "both", label: "Game + direct pay", tagline: "Supporters land on the game first, with a Direct Pay option" },
@@ -138,6 +138,8 @@ export type OrgCampaignInput = {
   widget: ProgressWidget;
   /** Only meaningful for playable widgets (tree and race). */
   presentationMode: PresentationMode;
+  /** Grow The Tree care prices; ignored for other widgets. */
+  carePrices?: CarePrices;
   /** Retro Racer pit-stop prices; ignored for other widgets. */
   pitPrices?: PitPrices;
   /** Cozy Paws pet-care prices; ignored for other widgets. */
