@@ -13,9 +13,13 @@ type HeroFold = {
   tag: ReactNode;
   title: ReactNode;
   subtitle?: ReactNode;
+  /** Compact share control shown beside the intro description. */
+  introShare?: ReactNode;
   /** Rendered directly above the hero image, e.g. a personalized-share endorsement banner. */
   banner?: ReactNode;
   whyItMatters?: ReactNode;
+  /** Share control aligned to the right of the "Why this matters" card. */
+  whyShare?: ReactNode;
   /** Right of the hero: the cartoon graphic only, so the photo can match its height. */
   widget?: ReactNode;
   /** Compact progress row, shown under the graphic (or beside the story when there is no graphic). */
@@ -52,7 +56,7 @@ export function CampaignLayout({
   const showMilestones = campaign.milestones.length > 0 && campaign.type !== "awareness";
 
   const header = (
-    <header className="shrink-0 border-b border-black/5 bg-[#fbfaf6]/95">
+    <header className="shrink-0 border-b border-black/5 bg-[#F6F8F5]/95">
       <div className="mx-auto flex h-14 max-w-3xl items-center justify-between gap-3 px-4">
         <div className="flex min-w-0 items-center gap-2.5">
           <div
@@ -72,19 +76,22 @@ export function CampaignLayout({
     const extras = showMilestones || activities || afterActivities;
     return (
       <div
-        className="@container flex min-h-screen flex-col bg-[#fbfaf6] text-[var(--color-text)]"
+        className="@container flex min-h-screen flex-col bg-[#F6F8F5] text-[var(--color-text)]"
         style={themeStyle(campaign.theme)}
       >
         {header}
 
-        <Main className="flex min-h-0 flex-1 flex-col px-4 py-4 sm:px-6">
+        <Main className="flex min-h-0 flex-1 flex-col px-4 py-4 pb-12 sm:px-6">
           <div className="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-4">
             <div className="grid grid-cols-1 items-stretch gap-4 lg:grid-cols-12 lg:gap-6">
               <div className="lg:col-span-7">
                 <p className="text-xs font-semibold uppercase tracking-[0.12em] text-[var(--color-primary)]">{heroFold.tag}</p>
                 <h1 className="mt-1 text-2xl font-bold leading-tight lg:text-3xl">{heroFold.title}</h1>
                 {heroFold.subtitle ? (
-                  <p className="mt-1.5 line-clamp-1 text-sm text-[var(--color-text-muted)] lg:text-base">{heroFold.subtitle}</p>
+                  <div className="mt-1.5 flex flex-wrap items-center gap-2">
+                    <p className="line-clamp-1 min-w-0 text-sm text-[var(--color-text-muted)] lg:text-base">{heroFold.subtitle}</p>
+                    {heroFold.introShare}
+                  </div>
                 ) : null}
                 {heroFold.banner ? <div className="mt-3">{heroFold.banner}</div> : null}
               </div>
@@ -101,9 +108,12 @@ export function CampaignLayout({
               {heroFold.widget ? <div className="lg:col-span-5">{heroFold.widget}</div> : null}
 
               {heroFold.whyItMatters ? (
-                <div className="rounded-2xl border border-black/5 bg-white p-4 shadow-sm lg:col-span-7">
-                  <h2 className="text-[15px] font-semibold">Why this matters</h2>
-                  <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-[var(--color-text-muted)]">{heroFold.whyItMatters}</p>
+                <div className="flex items-center justify-between gap-4 rounded-2xl border border-black/5 bg-white p-4 shadow-sm lg:col-span-7">
+                  <div className="min-w-0">
+                    <h2 className="text-[15px] font-semibold">Why this matters</h2>
+                    <p className="mt-1.5 line-clamp-3 text-sm leading-relaxed text-[var(--color-text-muted)]">{heroFold.whyItMatters}</p>
+                  </div>
+                  {heroFold.whyShare ? <div className="shrink-0">{heroFold.whyShare}</div> : null}
                 </div>
               ) : null}
               {heroFold.stats ? <div className="lg:col-span-5">{heroFold.stats}</div> : null}
@@ -131,7 +141,7 @@ export function CampaignLayout({
               </div>
             ) : null}
 
-            <div className="lg:mt-auto">{heroFold.actionBox}</div>
+            {heroFold.actionBox ? <div className="lg:mt-auto">{heroFold.actionBox}</div> : null}
           </div>
         </Main>
 
