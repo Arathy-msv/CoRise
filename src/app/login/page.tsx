@@ -104,6 +104,16 @@ function LoginInner() {
         <Button className="w-full" size="lg" type="submit" loading={busy}>
           {busy ? "Signing in…" : "Sign In"}
         </Button>
+        <Button
+          className="w-full"
+          size="lg"
+          type="button"
+          variant="secondary"
+          onClick={() => router.push(orgSlug ? `/supporter?org=${encodeURIComponent(orgSlug)}` : "/supporter")}
+        >
+          Supporter login
+        </Button>
+        <p className="text-center text-xs text-[var(--color-text-muted)]">Supporter login is a demo. It does not check a password.</p>
       </form>
 
       <p className="text-xs text-[var(--color-text-muted)]">
