@@ -8,8 +8,8 @@ const OFFERINGS = [
   {
     id: "saas" as const,
     icon: "☁️",
-    name: "Corise Cloud",
-    tag: "SaaS",
+    name: "SaaS Edition",
+    tag: "Cloud",
     target: "Multi-tenant cloud workspace, live in minutes.",
     features: ["Instant deployment, zero setup", "Automatic cloud backups", "Global platform oversight & admin tier"],
     cta: "Start Cloud Workspace",
