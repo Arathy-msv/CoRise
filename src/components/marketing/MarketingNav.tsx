@@ -7,12 +7,13 @@ import { ProfileMenu } from "@/components/profile/ProfileMenu";
 import { useApp } from "@/context/AppContext";
 import { useCorise } from "@/context/CoriseContext";
 import { canAccessPlatformAdmin } from "@/lib/deployment";
+import { orgDashboardPath } from "@/lib/paths";
 
 export function MarketingNav({ tone = "light" }: { tone?: "light" | "dark" }) {
   const { state, hydrated } = useCorise();
   const { mode, role } = useApp();
   const signedIn = hydrated && state.isSignedIn;
-  const dashboardHref = canAccessPlatformAdmin(mode, role) ? "/admin/platform" : "/overview";
+  const dashboardHref = canAccessPlatformAdmin(mode, role) ? "/admin/platform" : orgDashboardPath(state.organization.orgSlug);
   const dark = tone === "dark";
   const link = dark
     ? "rounded-lg px-3 py-1.5 text-sm font-medium text-[var(--color-navy-muted)] transition hover:text-white"

@@ -18,6 +18,11 @@ export function orgAdminLoginPath(orgSlug: string): string {
   return `/login?org=${encodeURIComponent(orgSlug)}`;
 }
 
+/** Organization admin dashboard. The path includes the organization's public identifier. */
+export function orgDashboardPath(orgSlug: string): string {
+  return `/dashboard/${encodeURIComponent(orgSlug)}`;
+}
+
 /** Only same-origin relative paths are allowed as post-auth destinations. */
 export function safeNextPath(value: string | null): string | null {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return null;

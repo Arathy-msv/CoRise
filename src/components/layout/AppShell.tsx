@@ -10,7 +10,7 @@ import { ButtonLink } from "@/components/ui/Button";
 import { ModeSwitcher, RoleSwitcher } from "@/components/deployment/DeploymentControls";
 import { ProfileMenu } from "@/components/profile/ProfileMenu";
 import { useCorise } from "@/context/CoriseContext";
-import { newCampaignPath } from "@/lib/paths";
+import { newCampaignPath, orgDashboardPath } from "@/lib/paths";
 
 type NavItem = { href: string; label: string; icon: IconName; match?: string[] };
 
@@ -55,7 +55,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }, [orgName]);
 
   const primaryNav: NavItem[] = [
-    { href: "/overview", label: "Dashboard", icon: "home", match: ["/dashboard"] },
+    { href: orgDashboardPath(state.organization.orgSlug), label: "Dashboard", icon: "home", match: ["/dashboard", "/overview"] },
     { href: "/campaigns", label: "Campaigns", icon: "megaphone", match: ["/campaigns/create"] },
   ];
 
