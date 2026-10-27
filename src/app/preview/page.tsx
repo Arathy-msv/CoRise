@@ -27,36 +27,8 @@ import { publicCampaignPath, publicOrgPath } from "@/lib/paths";
 import { createSectionFromTemplate, insertSectionAt, removeSectionAt, swapSections } from "@/lib/website-sections";
 import type { WebsiteSection } from "@/types/corise";
 
-type Device = "desktop" | "mobile";
-
 function Centered({ children }: { children: React.ReactNode }) {
   return <div className="mx-auto max-w-md space-y-3 px-4 py-24 text-center">{children}</div>;
-}
-
-function DeviceToggle({ value, onChange }: { value: Device; onChange: (d: Device) => void }) {
-  return (
-    <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1" role="group" aria-label="Preview size">
-      {(
-        [
-          ["desktop", "monitor", "Desktop"],
-          ["mobile", "phone", "Mobile"],
-        ] as const
-      ).map(([id, icon, label]) => (
-        <button
-          key={id}
-          type="button"
-          aria-pressed={value === id}
-          onClick={() => onChange(id)}
-          className={`inline-flex h-8 items-center gap-1.5 rounded-full px-3.5 text-sm font-medium transition focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] ${
-            value === id ? "bg-white text-[var(--color-text)] shadow-sm" : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-          }`}
-        >
-          <Icon name={icon} size={15} />
-          {label}
-        </button>
-      ))}
-    </div>
-  );
 }
 
 /**
@@ -64,12 +36,10 @@ function DeviceToggle({ value, onChange }: { value: Device; onChange: (d: Device
  * Publishing makes that public website live at /org/:slug. No campaign is created with it.
  */
 function OrgWebsitePreviewInner() {
-  const { state, hydrated, signIn, claimPendingWebsite, discardPendingSpace, updatePendingWebsite, publishWebsite, setPendingAccessMode } =
-    useCorise();
+  const { state, hydrated, signIn, claimPendingWebsite, discardPendingSpace, updatePendingWebsite, publishWebsite } = useCorise();
   const { mode, role, hydrated: appHydrated } = useApp();
   const provisioning = appHydrated && canAccessPlatformAdmin(mode, role);
   const router = useRouter();
-  const [device, setDevice] = useState<Device>("desktop");
   const [editing, setEditing] = useState(false);
   const [askDetails, setAskDetails] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -217,37 +187,6 @@ function OrgWebsitePreviewInner() {
 
       <main className={`px-4 pb-28 pt-4 transition-[padding] sm:px-6 sm:pb-10 ${editing ? "lg:pr-[404px]" : ""}`}>
         <div className="flex flex-col items-center gap-3">
-          {provisioning && pending && !ready ? (
-            <div className="flex flex-col items-center gap-2">
-              <div className="inline-flex rounded-full bg-[var(--color-bg)] p-1" role="group" aria-label="Access type">
-                {(
-                  [
-                    ["demo", "Demo"],
-                    ["licensed", "Licensed"],
-                  ] as const
-                ).map(([id, label]) => {
-                  const selected = (pending.accessMode ?? "demo") === id;
-                  return (
-                    <button
-                      key={id}
-                      type="button"
-                      aria-pressed={selected}
-                      onClick={() => setPendingAccessMode(id)}
-                      className={`h-8 rounded-full px-3.5 text-sm font-medium focus-visible:outline-2 focus-visible:outline-[var(--color-primary)] ${
-                        selected ? "bg-white text-[var(--color-text)] shadow-sm" : "text-[var(--color-text-muted)]"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-              <p className="max-w-md text-center text-xs text-[var(--color-text-muted)]">
-                Demo creates a password to share. Licensed also creates a license number. No campaign is created.
-              </p>
-            </div>
-          ) : null}
-          <DeviceToggle value={device} onChange={setDevice} />
           <p className="text-xs text-[var(--color-text-muted)]">
             {live
               ? "Your organization website is live."
@@ -264,22 +203,18 @@ function OrgWebsitePreviewInner() {
         </div>
 
         <div
-          className={`mx-auto mt-4 overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-lg)] ring-1 ring-black/5 transition-[max-width] ${
-            device === "mobile" ? "max-w-[390px]" : "max-w-6xl"
-          }`}
+          className="mx-auto mt-4 max-w-6xl overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-lg)] ring-1 ring-black/5"
           onClickCapture={(e) => {
             if (editing && (e.target as HTMLElement).closest("a")) e.preventDefault();
           }}
         >
-          <div className={device === "mobile" ? "h-[760px] overflow-y-auto" : ""}>
-            {editing ? (
-              <WebsiteEditProvider value={api}>
-                <OrgWebsiteRenderer website={website} organization={organization} campaigns={websiteCampaigns} mode={device} embedded />
-              </WebsiteEditProvider>
-            ) : (
-              <OrgWebsiteRenderer website={website} organization={organization} campaigns={websiteCampaigns} mode={device} embedded />
-            )}
-          </div>
+          {editing ? (
+            <WebsiteEditProvider value={api}>
+              <OrgWebsiteRenderer website={website} organization={organization} campaigns={websiteCampaigns} mode="desktop" embedded />
+            </WebsiteEditProvider>
+          ) : (
+            <OrgWebsiteRenderer website={website} organization={organization} campaigns={websiteCampaigns} mode="desktop" embedded />
+          )}
         </div>
 
         <p className="mt-4 text-center text-xs text-[var(--color-text-muted)]">
@@ -369,7 +304,6 @@ function PreviewInner() {
   const { state, hydrated, signIn, claimPendingSpace, discardPendingSpace, editCampaign, publishCampaign } = useCorise();
   const router = useRouter();
   const idParam = useSearchParams().get("id");
-  const [device, setDevice] = useState<Device>("desktop");
   const [editing, setEditing] = useState(false);
   const [askDetails, setAskDetails] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -492,7 +426,6 @@ function PreviewInner() {
 
       <main className={`px-4 pb-28 pt-4 transition-[padding] sm:px-6 sm:pb-10 ${editing ? "lg:pr-[404px]" : ""}`}>
         <div className="flex flex-col items-center gap-3">
-          <DeviceToggle value={device} onChange={setDevice} />
           <p className="text-xs text-[var(--color-text-muted)]">
             {live ? "This is your live page." : "Only you can see this until you publish."}
           </p>
@@ -504,14 +437,8 @@ function PreviewInner() {
           ) : null}
         </div>
 
-        <div
-          className={`mx-auto mt-4 overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-lg)] ring-1 ring-black/5 transition-[max-width] ${
-            device === "mobile" ? "max-w-[390px]" : "max-w-6xl"
-          }`}
-        >
-          <div className={device === "mobile" ? "h-[760px] overflow-y-auto" : ""}>
-            <CampaignPreview campaign={campaign} />
-          </div>
+        <div className="mx-auto mt-4 max-w-6xl overflow-hidden rounded-2xl bg-white shadow-[var(--shadow-lg)] ring-1 ring-black/5">
+          <CampaignPreview campaign={campaign} />
         </div>
 
         <p className="mt-4 text-center text-xs text-[var(--color-text-muted)]">
