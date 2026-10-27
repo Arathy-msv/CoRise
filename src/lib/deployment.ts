@@ -144,7 +144,7 @@ export function appHomePath(mode: DeploymentMode, role: AppRole): string {
   const r = effectiveRole(mode, role);
   if (r === "PLATFORM_ADMIN") return "/admin/platform";
   if (r === "ORG_ADMIN") return "/dashboard";
-  return "/#organizations";
+  return "/organizations";
 }
 
 export function upsertOrganization(list: DirectoryOrganization[], org: DirectoryOrganization): DirectoryOrganization[] {
