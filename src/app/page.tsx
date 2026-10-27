@@ -1,12 +1,8 @@
 "use client";
 
-import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { LicenseKeyModal } from "@/components/deployment/DeploymentControls";
 import { Icon } from "@/components/ui/Icon";
 import { useApp } from "@/context/AppContext";
-import { useCorise } from "@/context/CoriseContext";
-import { appHomePath, canCreateWebsite } from "@/lib/deployment";
 
 const OFFERINGS = [
   {
@@ -31,9 +27,7 @@ const OFFERINGS = [
 
 export default function MasterLandingPage() {
   const router = useRouter();
-  const { mode, role, setMode, activateLicense } = useApp();
-  const { state, hydrated, signIn, startLicensedWorkspace } = useCorise();
-  const [licenseOpen, setLicenseOpen] = useState(false);
+  const { mode } = useApp();
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[var(--color-navy)] px-4 py-16">
@@ -70,19 +64,7 @@ export default function MasterLandingPage() {
               </ul>
               <button
                 type="button"
-                onClick={() => {
-                  if (o.id === "saas") {
-                    setMode("saas");
-                    if (canCreateWebsite("saas", role)) {
-                      router.push("/create");
-                      return;
-                    }
-                    const dest = appHomePath("saas", role);
-                    router.push(hydrated && state.isSignedIn ? dest : `/login?next=${encodeURIComponent(dest)}`);
-                    return;
-                  }
-                  setLicenseOpen(true);
-                }}
+                onClick={() => router.push(o.id === "saas" ? "/enter/saas" : "/enter/licensed")}
                 className={`mt-6 inline-flex h-11 items-center justify-center gap-2 rounded-lg text-sm font-semibold transition focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white ${
                   o.id === "saas"
                     ? "bg-[var(--color-emerald)] text-[var(--color-navy)] hover:brightness-110"
@@ -96,21 +78,6 @@ export default function MasterLandingPage() {
           );
         })}
       </div>
-
-      {licenseOpen ? (
-        <LicenseKeyModal
-          onClose={() => setLicenseOpen(false)}
-          onActivate={(key) => {
-            // Only the first activation starts a fresh workspace — reactivating an
-            // already-licensed install (e.g. a new key) keeps the admin's real data.
-            if (mode !== "licensed") startLicensedWorkspace();
-            activateLicense(key);
-            signIn();
-            setLicenseOpen(false);
-            router.push("/dashboard");
-          }}
-        />
-      ) : null}
     </div>
   );
 }
