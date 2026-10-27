@@ -24,6 +24,23 @@ import { campaignProgress, formatGoalValue, formatUsd, parsePledge, progressPerc
 import type { Campaign } from "@/types/corise";
 import { CAMPAIGN_TYPE_META } from "@/types/corise";
 
+function SharePill({ prominent = false, onClick }: { prominent?: boolean; onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={
+        prominent
+          ? "inline-flex items-center gap-1.5 rounded-full border border-transparent bg-[#F5EDE1] px-4 py-1.5 text-xs font-semibold text-amber-950 shadow-xs transition-all hover:bg-[#EBDDCE]"
+          : "inline-flex items-center gap-1.5 rounded-full border border-amber-200/55 bg-amber-100/50 px-3 py-1 text-xs font-medium text-amber-950 transition-all hover:bg-amber-100"
+      }
+    >
+      <span aria-hidden>{prominent ? "📤" : "🔗"}</span>
+      Share
+    </button>
+  );
+}
+
 const ENDORSER_NAME_KEY = "corise-endorser-name";
 
 /** Progress is shown only when real (or clearly labeled sample) money has been recorded. */
@@ -260,6 +277,25 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
     setCtaDone(true);
   };
 
+  const shareCampaign = async () => {
+    const url = `${window.location.origin}${publicCampaignPath(campaign.slug, publicOrganization.orgSlug)}`;
+    const payload = { title: campaign.headline || campaign.title, text: campaign.description, url };
+    if (typeof navigator.share === "function") {
+      try {
+        await navigator.share(payload);
+        return;
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(url);
+      showToast("Campaign link copied!");
+    } catch {
+      showToast("Couldn't copy the link. Copy it from the address bar.", "warn");
+    }
+  };
+
   const progress = campaign.fundraisingTarget
     ? Math.min(100, (campaign.metrics.fundsRaised / campaign.fundraisingTarget) * 100)
     : 0;
@@ -284,8 +320,10 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
           tag: CAMPAIGN_TYPE_META[campaign.type]?.label ?? "Campaign",
           title: campaign.headline || campaign.title,
           subtitle: campaign.description,
+          introShare: <SharePill onClick={() => void shareCampaign()} />,
           banner: <EndorsementBanner />,
           whyItMatters: campaign.whyItMatters,
+          whyShare: <SharePill prominent onClick={() => void shareCampaign()} />,
           widget: isPlayableGame ? (
             <div ref={launchRef} className="flex h-full flex-col justify-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm">
               <p className="text-sm font-semibold">How would you like to support?</p>
@@ -385,38 +423,7 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
               </p>
             </div>
           ) : undefined,
-          actionBox: isPlayableGame ? (
-            <div className="flex flex-col gap-4 rounded-2xl border border-black/5 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:justify-between lg:gap-6">
-              {goal && goal.widget !== "none" ? (
-                <div className="min-w-0 flex-1">
-                  <CampaignGamifiedProgress type={goal.widget} currentAmount={goal.current} targetAmount={goal.target} goalType={goal.goalType} />
-                </div>
-              ) : (
-                <div className="min-w-0 flex-1" />
-              )}
-              {shared ? (
-                <p role="status" className="rounded-xl bg-[var(--color-primary-soft)] px-3 py-2 text-sm font-medium text-[var(--color-primary)]">
-                  Share message copied — thank you for helping spread the word.
-                </p>
-              ) : null}
-              <div className="flex shrink-0 items-center gap-2 border-t border-black/5 pt-3 lg:border-t-0 lg:pt-0">
-                <Button variant="ghost" size="sm" onClick={() => setShareOpen(true)}>
-                  <Icon name="share" />
-                  Share
-                </Button>
-                {campaignHasActivities(campaign) ? (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => actionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })}
-                  >
-                    <Icon name="sparkles" />
-                    Play Game
-                  </Button>
-                ) : null}
-              </div>
-            </div>
-          ) : (
+          actionBox: isPlayableGame ? null : (
             <div className="flex flex-col gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm lg:flex-row lg:items-center lg:gap-6">
               {pledgeGoal ? (
                 <form onSubmit={submitPledge} noValidate className="min-w-0 flex-1">
@@ -573,11 +580,10 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
                 </div>
               ) : null}
             </div>
-          ) : (
-            <div ref={actionRef} />
-          )
+          ) : undefined
         }
         afterActivities={
+          (campaign.sponsor.enabled && campaign.sponsor.name) || (campaign.type === "awareness" && campaign.socialMessage) ? (
           <>
             {campaign.sponsor.enabled && campaign.sponsor.name ? (
               <div className="rounded-2xl border border-black/5 bg-white p-5 shadow-sm">
@@ -618,22 +624,17 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
               </div>
             ) : null}
           </>
-        }
-        footer={
-          <footer className="border-t border-black/5 bg-white/60">
-            <div className="mx-auto flex max-w-3xl flex-col items-center justify-between gap-2 px-4 py-6 text-sm text-[var(--color-text-muted)] sm:flex-row">
-              <p className="font-semibold text-[var(--color-text)]">{campaign.organizationName}</p>
-              <p className="text-xs">Built with Corise</p>
-            </div>
-          </footer>
+          ) : undefined
         }
       />
 
-      <div className="fixed inset-x-0 bottom-0 z-10 border-t border-black/5 bg-[#fbfaf6]/95 p-3 backdrop-blur md:hidden">
-        <Button className="w-full" size="lg" onClick={primaryAction} disabled={ctaDone}>
-          {ctaDone ? "You're in" : campaign.primaryCta}
-        </Button>
-      </div>
+      {isPlayableGame ? null : (
+        <div className="fixed inset-x-0 bottom-0 z-10 border-t border-black/5 bg-[#F6F8F5]/95 p-3 backdrop-blur md:hidden">
+          <Button className="w-full" size="lg" onClick={primaryAction} disabled={ctaDone}>
+            {ctaDone ? "You're in" : campaign.primaryCta}
+          </Button>
+        </div>
+      )}
       {shareOpen ? (
         <PersonalizedShareModal
           path={publicCampaignPath(campaign.slug, publicOrganization.orgSlug)}
