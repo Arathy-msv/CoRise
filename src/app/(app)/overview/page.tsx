@@ -14,7 +14,7 @@ import { useCorise } from "@/context/CoriseContext";
 import { canCreateWebsite } from "@/lib/deployment";
 import { relativeTime } from "@/lib/format";
 import { campaignDraftView, campaignUpdatedAt } from "@/lib/impact-space/publish";
-import { newCampaignPath, orgDashboardPath, publicCampaignPath, publicOrgPath } from "@/lib/paths";
+import { isOrgDashboardLocation, newCampaignPath, orgDashboardPath, publicCampaignPath, publicOrgPath } from "@/lib/paths";
 import { stripBasePath } from "@/lib/public-asset";
 import { openAppPath } from "@/lib/static-nav";
 import { campaignProgress, formatGoalValue, progressPercent } from "@/lib/progress";
@@ -145,9 +145,8 @@ export default function OverviewPage() {
 
   useEffect(() => {
     if (!hydrated || !orgSlug) return;
-    const expected = orgDashboardPath(orgSlug);
-    if (stripBasePath(window.location.pathname) === expected) return;
-    openAppPath(expected, router, "replace");
+    if (isOrgDashboardLocation(stripBasePath(window.location.pathname), window.location.search, orgSlug)) return;
+    openAppPath(orgDashboardPath(orgSlug), router, "replace");
   }, [hydrated, orgSlug, router]);
 
   if (!hydrated) {
