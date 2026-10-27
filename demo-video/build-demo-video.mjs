@@ -22,8 +22,9 @@ const lines = [
   "Supporters can play a game, contribute directly, or do both. This campaign lets the visitor choose.",
   "The organization admin publishes the campaign. A public link is ready to share.",
   "The admin shares the campaign with supporters by email. They select people and send a demo invitation. No real email is sent.",
-  "A visitor opens the public page. They can play the garden game, or contribute directly.",
-  "The visitor chooses twenty-five dollars and presses Pay now. This is a demo contribution, recorded in this browser. No real payment is collected.",
+  "A visitor opens the public page. They can play the garden game, or contribute directly. We open the game.",
+  "This is the garden game window. The visitor can water the tree, add fertilizer, or give it sunlight. Each care action suggests a contribution. No real payment is taken.",
+  "The visitor can also contribute directly. They choose twenty-five dollars and press Pay now. This is a demo contribution, recorded in this browser. No real payment is collected.",
   "Coming next is the supporter dashboard. A supporter joins a campaign, writes their own note, and sees a leadership board with the amount raised.",
 ];
 

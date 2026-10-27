@@ -1,1 +1,1 @@
-Coming next is the supporter dashboard. A supporter joins a campaign, writes their own note, and sees a leadership board with the amount raised.
+The visitor can also contribute directly. They choose twenty-five dollars and press Pay now. This is a demo contribution, recorded in this browser. No real payment is collected.

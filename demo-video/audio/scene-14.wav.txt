@@ -1,1 +1,1 @@
-The visitor chooses twenty-five dollars and presses Pay now. This is a demo contribution, recorded in this browser. No real payment is collected.
+This is the garden game window. The visitor can water the tree, add fertilizer, or give it sunlight. Each care action suggests a contribution. No real payment is taken.

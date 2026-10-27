@@ -339,9 +339,19 @@ try {
     await sleep(1200);
   }
   await waitFor("How would you like to support?");
-  await handOn("Direct pay");
+  await handOn(process.argv.includes("--game-only") ? "Play the game" : "Direct pay");
   await shot(13);
 
+  if (process.argv.includes("--game-only")) {
+    await clickText("Continue");
+    await waitFor("Every little action");
+    await sleep(1200);
+    await js(`document.querySelector('[data-care="water"]')?.scrollIntoView({ block: "end" })`);
+    await sleep(300);
+    await handOn("Water");
+    await shot(14);
+    process.stdout.write("game frame only\n");
+  } else {
   await js(`document.querySelector('input[name="support-mode"][value="pay"]')?.click()`);
   await sleep(200);
   await clickText("Continue");
@@ -368,6 +378,7 @@ try {
   await shot(15);
 
   process.stdout.write("captured\n");
+  }
   }
 } finally {
   ws.close();

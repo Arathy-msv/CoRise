@@ -1,1 +1,1 @@
-A visitor opens the public page. They can play the garden game, or contribute directly.
+A visitor opens the public page. They can play the garden game, or contribute directly. We open the game.
