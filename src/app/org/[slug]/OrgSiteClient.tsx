@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, use } from "react";
+import { Suspense, use, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
@@ -9,6 +9,8 @@ import { ToastHost } from "@/components/ui/Toast";
 import { useApp } from "@/context/AppContext";
 import { useCorise, websiteCandidate } from "@/context/CoriseContext";
 import { directoryWebsite } from "@/lib/deployment";
+import { findWorkspaceBySlug, type OrgWorkspace } from "@/lib/org-access";
+import { getFeaturedWebsiteCampaigns } from "@/lib/sample-data";
 function Unavailable({ title, body }: { title: string; body: string }) {
   return (
     <div className="mx-auto flex min-h-screen max-w-lg flex-col items-center justify-center gap-3 px-4 text-center">
@@ -30,8 +32,15 @@ function OrgSiteInner({ slug }: { slug: string }) {
   const search = useSearchParams();
   const isWebsiteMgr = state.isSignedIn;
   const preview = search.get("preview") === "1" && isWebsiteMgr;
+  const [workspaceChecked, setWorkspaceChecked] = useState(false);
+  const [workspace, setWorkspace] = useState<OrgWorkspace | null>(null);
 
-  if (!hydrated || !appHydrated) {
+  useEffect(() => {
+    setWorkspace(findWorkspaceBySlug(slug));
+    setWorkspaceChecked(true);
+  }, [slug]);
+
+  if (!hydrated || !appHydrated || !workspaceChecked) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] text-sm text-[var(--color-text-muted)]">
         Loading website…
@@ -41,8 +50,46 @@ function OrgSiteInner({ slug }: { slug: string }) {
 
   const slugMatches =
     slug === state.organization.orgSlug || slug === state.organization.shortName.toLowerCase().replace(/\s+/g, "-");
+  const sessionOwns = Boolean(state.sessionOrgId) && slug === state.organization.orgSlug;
   const directoryOrg = organizations.find((o) => o.slug === slug);
   const ownSiteLive = slugMatches && (preview || state.website?.status === "published");
+  if (sessionOwns && state.website && (preview || state.website.status === "published")) {
+    return (
+      <>
+        {preview ? (
+          <div className="sticky top-0 z-20 flex flex-wrap items-center justify-between gap-2 border-b border-[var(--color-navy-border)] bg-[var(--color-navy)] px-4 py-2 text-white">
+            <p className="flex items-center gap-2 text-xs font-medium text-[var(--color-navy-muted)]">
+              <Icon name="eye" size={14} />
+              Draft preview — visitors can&apos;t see this version
+            </p>
+            <ButtonLink href="/website" variant="dark" size="sm">
+              <Icon name="arrowLeft" />
+              Back to My Website
+            </ButtonLink>
+          </div>
+        ) : null}
+        <OrgWebsiteRenderer
+          website={(preview ? websiteCandidate(state).website : state.website) ?? state.website}
+          organization={state.organization}
+          campaigns={state.campaigns.filter((c) => c.organizationName === state.organization.name)}
+        />
+        <ToastHost />
+      </>
+    );
+  }
+
+  if (workspace?.website?.status === "published") {
+    return (
+      <>
+        <OrgWebsiteRenderer
+          website={workspace.website}
+          organization={workspace.organization}
+          campaigns={getFeaturedWebsiteCampaigns(workspace.campaigns)}
+        />
+        <ToastHost />
+      </>
+    );
+  }
 
   if (directoryOrg && !ownSiteLive) {
     const site = directoryWebsite(directoryOrg, state.organization);

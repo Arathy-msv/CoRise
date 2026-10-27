@@ -113,7 +113,7 @@ export default function HomePage() {
             Create your organization&apos;s website
           </h1>
           <p className="mx-auto mt-4 max-w-xl text-center text-[17px] leading-relaxed text-[var(--color-navy-muted)]">
-            Set up your official home online in seconds, then launch campaigns and rally supporters from your dashboard.
+            Set up the organization website. Campaigns are added later, by the organization admin, from their dashboard.
           </p>
 
           <form onSubmit={create} noValidate className="mt-10">

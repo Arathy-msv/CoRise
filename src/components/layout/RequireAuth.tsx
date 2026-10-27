@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useApp } from "@/context/AppContext";
@@ -8,18 +8,37 @@ import { useCorise } from "@/context/CoriseContext";
 import { canAccessOrgDashboard, canAccessPlatformAdmin, roleLabel } from "@/lib/deployment";
 
 export function RequireAuth({ children }: { children: React.ReactNode }) {
-  const { state, hydrated } = useCorise();
-  const { hydrated: appHydrated, mode, role, setRole } = useApp();
+  const { state, hydrated, signOut } = useCorise();
+  const { hydrated: appHydrated, mode, role, organizations, setRole } = useApp();
   const router = useRouter();
+  const sessionOrg = state.sessionOrgId ? organizations.find((org) => org.id === state.sessionOrgId) : undefined;
+  const licenseRedirect = useRef(false);
 
   useEffect(() => {
     if (!hydrated || !appHydrated) return;
+    if (
+      state.isSignedIn &&
+      sessionOrg?.accessMode === "licensed" &&
+      sessionOrg.licenseStatus &&
+      sessionOrg.licenseStatus !== "active"
+    ) {
+      licenseRedirect.current = true;
+      const notice = sessionOrg.licenseStatus === "expired" ? "expired" : "inactive";
+      const slug = sessionOrg.slug;
+      signOut();
+      router.replace(`/login?org=${encodeURIComponent(slug)}&notice=${notice}`);
+      return;
+    }
     if (!state.isSignedIn) {
+      if (licenseRedirect.current) {
+        licenseRedirect.current = false;
+        return;
+      }
       router.replace("/login");
       return;
     }
     if (canAccessPlatformAdmin(mode, role)) router.replace("/admin/platform");
-  }, [hydrated, appHydrated, state.isSignedIn, mode, role, router]);
+  }, [hydrated, appHydrated, state.isSignedIn, mode, role, router, sessionOrg, signOut]);
 
   if (!hydrated || !appHydrated) {
     return (

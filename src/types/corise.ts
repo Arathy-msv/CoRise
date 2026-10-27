@@ -248,6 +248,8 @@ export interface PendingImpactSpace {
   organization: Organization;
   website: OrgWebsite;
   campaign: Campaign;
+  /** Demo or licensed access chosen before the organization is created. */
+  accessMode?: "demo" | "licensed";
 }
 
 /** Impact Space saved into the signed-in workspace; content lives in organization/website/campaigns. */
@@ -350,6 +352,11 @@ export interface CoriseDemoState {
   lastPublishedId: string | null;
   pendingSpace: PendingImpactSpace | null;
   claimedSpace: ClaimedImpactSpace | null;
+  /**
+   * Set when an organization admin is signed into a provisioned organization.
+   * Absent for the sample workspace. Passwords are never stored here.
+   */
+  sessionOrgId?: string | null;
   toast: { message: string; tone: "success" | "info" | "warn" } | null;
 }
 

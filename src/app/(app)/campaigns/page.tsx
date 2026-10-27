@@ -47,10 +47,12 @@ export default function CampaignsPage() {
         title="My Pages"
         description="Drafts stay private until you publish them."
         actions={
-          <ButtonLink href={newCampaignPath(state.organization.orgSlug)}>
-            <Icon name="plus" />
-            New Campaign
-          </ButtonLink>
+          active.length > 0 ? (
+            <ButtonLink href={newCampaignPath(state.organization.orgSlug)}>
+              <Icon name="plus" />
+              New Campaign
+            </ButtonLink>
+          ) : undefined
         }
       />
 
@@ -105,12 +107,12 @@ export default function CampaignsPage() {
         ) : (
           <EmptyState
             icon="megaphone"
-            title="No campaigns yet"
-            body="Create a campaign with a headline, a goal, and an optional progress widget."
+            title="You haven't created any campaigns yet."
+            body="Your campaigns will show up here after you create one. Nothing is added automatically."
             action={
               <ButtonLink href={newCampaignPath(state.organization.orgSlug)}>
                 <Icon name="plus" />
-                New Campaign
+                Create Your First Campaign
               </ButtonLink>
             }
           />

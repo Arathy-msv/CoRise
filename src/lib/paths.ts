@@ -13,6 +13,11 @@ export function newCampaignPath(orgSlug: string): string {
   return `/org/${orgSlug}/campaigns/new`;
 }
 
+/** Shareable sign-in page for one organization's admin. The password is never part of the URL. */
+export function orgAdminLoginPath(orgSlug: string): string {
+  return `/login?org=${encodeURIComponent(orgSlug)}`;
+}
+
 /** Only same-origin relative paths are allowed as post-auth destinations. */
 export function safeNextPath(value: string | null): string | null {
   if (!value || !value.startsWith("/") || value.startsWith("//")) return null;

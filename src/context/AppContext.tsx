@@ -12,6 +12,7 @@ import {
   type DeploymentMode,
   type DirectoryOrganization,
 } from "@/lib/deployment";
+import { ORG_DIRECTORY_EVENT } from "@/lib/org-access";
 
 interface AppState {
   version: 1;
@@ -77,8 +78,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const onStorage = (e: StorageEvent) => {
       if (e.key === APP_STORAGE_KEY) setState(loadAppState());
     };
+    const onDirectory = () => setState(loadAppState());
     window.addEventListener("storage", onStorage);
-    return () => window.removeEventListener("storage", onStorage);
+    window.addEventListener(ORG_DIRECTORY_EVENT, onDirectory);
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener(ORG_DIRECTORY_EVENT, onDirectory);
+    };
   }, []);
 
   useEffect(() => {
@@ -110,7 +116,42 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const ownIsLive = cs.isSignedIn && (cs.website?.status === "published" || publishedCampaigns > 0);
 
   useEffect(() => {
-    if (!hydrated || !coriseHydrated || !ownIsLive || !ownOrg.orgSlug) return;
+    if (!hydrated || !coriseHydrated || !ownOrg.orgSlug) return;
+    if (cs.sessionOrgId) {
+      const count = cs.campaigns.filter((c) => !c.archived && !c.isSample).length;
+      const websiteStatus = cs.website?.status === "published" ? "live" : "draft";
+      setState((s) => {
+        const existing = s.organizations.find((o) => o.id === cs.sessionOrgId);
+        if (!existing) return s;
+        if (
+          existing.activeCampaignsCount === count &&
+          existing.websiteStatus === websiteStatus &&
+          existing.name === ownOrg.name &&
+          existing.slug === ownOrg.orgSlug
+        ) {
+          return s;
+        }
+        return {
+          ...s,
+          organizations: s.organizations.map((o) =>
+            o.id === existing.id
+              ? {
+                  ...o,
+                  name: ownOrg.name,
+                  slug: ownOrg.orgSlug,
+                  description: ownOrg.description || o.description,
+                  activeCampaignsCount: count,
+                  websiteStatus,
+                  theme: cs.website?.brandTheme ?? ownOrg.brandTheme,
+                  heroImage: cs.website?.heroImage ?? o.heroImage,
+                }
+              : o
+          ),
+        };
+      });
+      return;
+    }
+    if (!ownIsLive) return;
     upsertDirectoryOrganization({
       id: `org-${ownOrg.orgSlug}`,
       name: ownOrg.name,
@@ -134,6 +175,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     ownOrg.mission,
     ownOrg.brandTheme,
     publishedCampaigns,
+    cs.sessionOrgId,
+    cs.campaigns,
+    cs.website?.status,
     cs.website?.brandTheme,
     cs.website?.heroImage,
     upsertDirectoryOrganization,

@@ -1,40 +1,55 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { getPlan } from "@/config/plans";
+import { OrgAccessDialog } from "@/components/admin/OrgAccessDialog";
 import { Logo } from "@/components/brand/Logo";
 import { ModeSwitcher, RoleSwitcher } from "@/components/deployment/DeploymentControls";
 import { ProfileMenu } from "@/components/profile/ProfileMenu";
+import { CopyTextButton } from "@/components/ui/CopyTextButton";
 import { useApp } from "@/context/AppContext";
-import { canAccessPlatformAdmin, orgColor, orgInitials, platformStats, roleLabel, type DirectoryOrganization } from "@/lib/deployment";
-import { publicOrgPath } from "@/lib/paths";
+import { canAccessPlatformAdmin, orgColor, orgInitials, platformStats, roleLabel, type DirectoryOrganization, type OrgLicenseStatus } from "@/lib/deployment";
+import { resetOrgPassword, setOrgLicenseStatus } from "@/lib/org-access";
+import { orgAdminLoginPath, publicOrgPath } from "@/lib/paths";
 
 function Centered({ children }: { children: React.ReactNode }) {
   return <div className="flex min-h-screen items-center justify-center bg-[var(--color-bg)] px-4 text-[var(--color-text-muted)]">{children}</div>;
 }
 
-function registeredOn(iso: string): string {
-  const date = new Date(iso);
-  if (Number.isNaN(date.getTime())) return "—";
-  return date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+function StatusPill({ children, tone }: { children: React.ReactNode; tone: "ok" | "muted" | "warn" }) {
+  const cls =
+    tone === "ok"
+      ? "bg-[var(--color-success-soft)] text-[var(--color-success)]"
+      : tone === "warn"
+        ? "bg-[var(--color-bg)] text-[var(--color-text)]"
+        : "bg-[var(--color-bg)] text-[var(--color-text-muted)]";
+  return <span className={`inline-flex rounded-full px-2 py-0.5 text-[11px] font-semibold ${cls}`}>{children}</span>;
 }
 
-function PlanBadge({ org }: { org: DirectoryOrganization }) {
-  const plan = getPlan(org.plan);
-  const tone =
-    org.plan === "organization"
-      ? "bg-[var(--color-navy)] text-white"
-      : org.plan === "pro"
-        ? "bg-[var(--color-primary-soft)] text-[var(--color-primary)]"
-        : "bg-[var(--color-bg)] text-[var(--color-text)]";
-  return <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-semibold ${tone}`}>{plan.name}</span>;
+function modeLabel(org: DirectoryOrganization): string {
+  if (!org.provisioned) return "Sample";
+  return org.accessMode === "licensed" ? "Licensed" : "Demo";
+}
+
+function licenseLabel(org: DirectoryOrganization): string {
+  if (!org.provisioned || org.accessMode !== "licensed") return "—";
+  if (org.licenseStatus === "active") return "Active";
+  if (org.licenseStatus === "inactive") return "Inactive";
+  if (org.licenseStatus === "expired") return "Expired";
+  return "Not set";
 }
 
 export default function PlatformAdminPage() {
   const router = useRouter();
   const { hydrated, mode, role, organizations, setRole } = useApp();
+  const [origin, setOrigin] = useState("");
+  const [accessId, setAccessId] = useState<string | null>(null);
+  const [revealed, setRevealed] = useState<{ id: string; password: string } | null>(null);
+  const [accessBusy, setAccessBusy] = useState(false);
+  const [accessError, setAccessError] = useState("");
+
+  useEffect(() => setOrigin(window.location.origin), []);
 
   useEffect(() => {
     if (hydrated && mode === "licensed") router.replace("/dashboard");
@@ -63,6 +78,33 @@ export default function PlatformAdminPage() {
       </Centered>
     );
   }
+
+  const accessOrg = accessId ? organizations.find((org) => org.id === accessId) : undefined;
+  const abs = (path: string) => (origin ? `${origin}${path}` : path);
+
+  const resetPassword = async (org: DirectoryOrganization) => {
+    if (!window.confirm(`Reset the password for ${org.name}? The current password will stop working. You'll see the new one once.`)) return;
+    setAccessBusy(true);
+    setAccessError("");
+    const result = await resetOrgPassword(org.id);
+    setAccessBusy(false);
+    if (!result.ok) {
+      setAccessError(result.error);
+      return;
+    }
+    setRevealed({ id: org.id, password: result.password });
+  };
+
+  const changeLicense = (org: DirectoryOrganization, status: OrgLicenseStatus) => {
+    const turningOff = status !== "active";
+    const message = turningOff
+      ? `Mark this license as ${status}? ${org.name} will not be able to sign in until you turn it back on.`
+      : `Turn the license back on for ${org.name}?`;
+    if (!window.confirm(message)) return;
+    const result = setOrgLicenseStatus(org.id, status);
+    if (!result.ok) setAccessError(result.error);
+    else setAccessError("");
+  };
 
   const stats = platformStats(organizations);
   const rows = [...organizations].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
@@ -99,7 +141,7 @@ export default function PlatformAdminPage() {
         <div>
           <h1 className="text-[28px] font-semibold tracking-tight">Platform admin</h1>
           <p className="mt-1 max-w-2xl text-sm text-[var(--color-text-muted)]">
-            Every organization website registered on Corise Cloud, with the plan it is on. Figures are saved in this browser.
+            Every organization website on Corise Cloud. New organizations start with no campaigns. Figures are saved in this browser.
           </p>
         </div>
 
@@ -120,62 +162,112 @@ export default function PlatformAdminPage() {
             </h2>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full table-fixed text-left text-sm">
+            <table className="w-full min-w-[980px] text-left text-sm">
               <thead className="bg-[var(--color-bg)] text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">
                 <tr>
-                  <th className="w-[34%] px-5 py-3 font-semibold">Organization</th>
-                  <th className="w-[20%] px-5 py-3 font-semibold">Website</th>
-                  <th className="w-[12%] px-5 py-3 font-semibold">Plan</th>
-                  <th className="w-[11%] px-5 py-3 font-semibold">Campaigns</th>
-                  <th className="w-[13%] px-5 py-3 font-semibold">Registered</th>
-                  <th className="w-[10%] px-5 py-3 font-semibold">Status</th>
+                  <th className="px-4 py-3 font-semibold">Organization</th>
+                  <th className="px-4 py-3 font-semibold">Mode</th>
+                  <th className="px-4 py-3 font-semibold">Public website</th>
+                  <th className="px-4 py-3 font-semibold">Admin sign-in</th>
+                  <th className="px-4 py-3 font-semibold">Campaigns</th>
+                  <th className="px-4 py-3 font-semibold">Website</th>
+                  <th className="px-4 py-3 font-semibold">License</th>
+                  <th className="px-4 py-3 font-semibold">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[var(--color-border)]">
-                {rows.map((org) => (
-                  <tr key={org.id}>
-                    <td className="max-w-0 px-5 py-3.5">
-                      <div className="flex items-center gap-3">
-                        <span
-                          aria-hidden
-                          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white"
-                          style={{ background: orgColor(org) }}
-                        >
-                          {orgInitials(org.name)}
-                        </span>
-                        <span className="min-w-0">
-                          <span className="block truncate font-semibold">{org.name}</span>
-                          <span className="block truncate text-xs text-[var(--color-text-muted)]">{org.description}</span>
-                        </span>
-                      </div>
-                    </td>
-                    <td className="max-w-0 px-5 py-3.5">
-                      <Link href={publicOrgPath(org.slug)} target="_blank" className="block truncate font-medium text-[var(--color-primary)] hover:underline">
-                        /org/{org.slug}
-                      </Link>
-                    </td>
-                    <td className="px-5 py-3.5">
-                      <PlanBadge org={org} />
-                    </td>
-                    <td className="px-5 py-3.5 tabular-nums">{org.activeCampaignsCount}</td>
-                    <td className="px-5 py-3.5 text-[var(--color-text-muted)]">{registeredOn(org.createdAt)}</td>
-                    <td className="px-5 py-3.5">
-                      {org.websiteStatus === "live" ? (
-                        <span className="rounded-full bg-[var(--color-success-soft)] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-success)]">
-                          Live
-                        </span>
-                      ) : (
-                        <span className="rounded-full bg-[var(--color-bg)] px-2 py-0.5 text-[11px] font-semibold text-[var(--color-text-muted)]">
-                          Draft
-                        </span>
-                      )}
-                    </td>
-                  </tr>
-                ))}
+                {rows.map((org) => {
+                  const publicPath = publicOrgPath(org.slug);
+                  const adminPath = orgAdminLoginPath(org.slug);
+                  return (
+                    <tr key={org.id} data-org-row={org.slug}>
+                      <td className="px-4 py-3.5">
+                        <div className="flex items-center gap-3">
+                          <span
+                            aria-hidden
+                            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white"
+                            style={{ background: orgColor(org) }}
+                          >
+                            {orgInitials(org.name)}
+                          </span>
+                          <span className="min-w-0">
+                            <span className="block font-semibold">{org.name}</span>
+                            <span className="mt-1 block">
+                              <StatusPill tone={org.provisioned ? "ok" : "muted"}>{org.provisioned ? "Active" : "Sample"}</StatusPill>
+                            </span>
+                          </span>
+                        </div>
+                      </td>
+                      <td className="px-4 py-3.5">{modeLabel(org)}</td>
+                      <td className="max-w-[180px] px-4 py-3.5">
+                        <Link href={publicPath} target="_blank" rel="noreferrer" className="block truncate font-medium text-[var(--color-primary)] hover:underline">
+                          /org/{org.slug}
+                        </Link>
+                      </td>
+                      <td className="max-w-[180px] px-4 py-3.5">
+                        {org.provisioned ? (
+                          <Link href={adminPath} target="_blank" rel="noreferrer" className="block truncate font-medium text-[var(--color-primary)] hover:underline">
+                            /login?org={org.slug}
+                          </Link>
+                        ) : (
+                          <span className="text-[var(--color-text-muted)]">Not set</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3.5 tabular-nums" data-campaign-count={org.activeCampaignsCount}>
+                        {org.activeCampaignsCount}
+                      </td>
+                      <td className="px-4 py-3.5">
+                        <StatusPill tone={org.websiteStatus === "live" ? "ok" : "muted"}>{org.websiteStatus === "live" ? "Live" : "Draft"}</StatusPill>
+                      </td>
+                      <td className="px-4 py-3.5">{licenseLabel(org)}</td>
+                      <td className="px-4 py-3.5">
+                        <div className="flex min-w-[180px] flex-col items-start gap-1.5">
+                          <Link href={publicPath} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[var(--color-primary)] hover:underline">
+                            View Public Website
+                          </Link>
+                          {org.provisioned ? (
+                            <Link href={adminPath} target="_blank" rel="noreferrer" className="text-xs font-semibold text-[var(--color-primary)] hover:underline">
+                              Open Admin Dashboard
+                            </Link>
+                          ) : null}
+                          <button
+                            type="button"
+                            className="text-xs font-semibold text-[var(--color-primary)] hover:underline"
+                            onClick={() => {
+                              setAccessId(org.id);
+                              setAccessError("");
+                              setRevealed(null);
+                            }}
+                          >
+                            View Access Details
+                          </button>
+                          <CopyTextButton text={abs(publicPath)} label="Copy Website URL" variant="ghost" />
+                          {org.provisioned ? <CopyTextButton text={abs(adminPath)} label="Copy Dashboard URL" variant="ghost" /> : null}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
         </section>
+
+        {accessOrg ? (
+          <OrgAccessDialog
+            org={accessOrg}
+            revealedPassword={revealed?.id === accessOrg.id ? revealed.password : null}
+            busy={accessBusy}
+            error={accessError}
+            onClose={() => {
+              setAccessId(null);
+              setRevealed(null);
+              setAccessError("");
+            }}
+            onResetPassword={() => void resetPassword(accessOrg)}
+            onLicenseStatus={(status) => changeLicense(accessOrg, status)}
+          />
+        ) : null}
       </main>
     </div>
   );
