@@ -41,8 +41,6 @@ function SharePill({ prominent = false, onClick }: { prominent?: boolean; onClic
   );
 }
 
-const ENDORSER_NAME_KEY = "corise-endorser-name";
-
 /** Progress is shown only when real (or clearly labeled sample) money has been recorded. */
 function showFundraisingProgress(c: Campaign): boolean {
   return c.showProgress && Boolean(c.fundraisingTarget) && c.metrics.fundsRaised > 0;
@@ -77,30 +75,12 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
   const [pledgeError, setPledgeError] = useState("");
   const [pledged, setPledged] = useState<number | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
-  const [endorserName, setEndorserName] = useState("");
   /** null = showing campaign details first; set once the supporter picks how to support. */
   const [launchMode, setLaunchMode] = useState<"play" | "pay" | null>(null);
   const [selectedMode, setSelectedMode] = useState<"play" | "pay">("play");
   const actionRef = useRef<HTMLDivElement>(null);
   const pledgeRef = useRef<HTMLInputElement>(null);
   const launchRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    try {
-      setEndorserName(localStorage.getItem(ENDORSER_NAME_KEY) ?? "");
-    } catch {
-      // Private browsing or disabled storage — the name field just starts empty.
-    }
-  }, []);
-
-  const rememberEndorserName = (value: string) => {
-    setEndorserName(value);
-    try {
-      if (value.trim()) localStorage.setItem(ENDORSER_NAME_KEY, value);
-    } catch {
-      // Ignore — remembering the name is a convenience, not a requirement.
-    }
-  };
 
   if (!hydrated || (Boolean(orgSlug) && !orgMatches && !workspaceReady)) {
     return (
@@ -277,25 +257,6 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
     setCtaDone(true);
   };
 
-  const shareCampaign = async () => {
-    const url = `${window.location.origin}${publicCampaignPath(campaign.slug, publicOrganization.orgSlug)}`;
-    const payload = { title: campaign.headline || campaign.title, text: campaign.description, url };
-    if (typeof navigator.share === "function") {
-      try {
-        await navigator.share(payload);
-        return;
-      } catch (err) {
-        if (err instanceof DOMException && err.name === "AbortError") return;
-      }
-    }
-    try {
-      await navigator.clipboard.writeText(url);
-      showToast("Campaign link copied!");
-    } catch {
-      showToast("Couldn't copy the link. Copy it from the address bar.", "warn");
-    }
-  };
-
   const progress = campaign.fundraisingTarget
     ? Math.min(100, (campaign.metrics.fundsRaised / campaign.fundraisingTarget) * 100)
     : 0;
@@ -320,10 +281,10 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
           tag: CAMPAIGN_TYPE_META[campaign.type]?.label ?? "Campaign",
           title: campaign.headline || campaign.title,
           subtitle: campaign.description,
-          introShare: <SharePill onClick={() => void shareCampaign()} />,
+          introShare: <SharePill onClick={() => setShareOpen(true)} />,
           banner: <EndorsementBanner />,
           whyItMatters: campaign.whyItMatters,
-          whyShare: <SharePill prominent onClick={() => void shareCampaign()} />,
+          whyShare: <SharePill prominent onClick={() => setShareOpen(true)} />,
           widget: isPlayableGame ? (
             <div ref={launchRef} className="flex h-full flex-col justify-center gap-3 rounded-2xl border border-black/5 bg-white p-4 shadow-sm">
               <p className="text-sm font-semibold">How would you like to support?</p>
@@ -639,8 +600,6 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
         <PersonalizedShareModal
           path={publicCampaignPath(campaign.slug, publicOrganization.orgSlug)}
           campaignTitle={campaign.headline || campaign.title}
-          defaultName={endorserName}
-          onNameChange={rememberEndorserName}
           onClose={() => setShareOpen(false)}
         />
       ) : null}

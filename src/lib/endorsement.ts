@@ -3,11 +3,25 @@
 export const MAX_ENDORSER_NAME = 60;
 export const MAX_ENDORSEMENT_NOTE = 240;
 
-export const QUICK_ENDORSEMENT_PROMPTS: string[] = [
-  "🌱 I just donated! Join me in reaching the goal.",
-  "❤️ This cause means a lot to me. Every bit helps!",
-  "🤝 Let's do this together!",
+export const SHARE_NOTE_PRESETS: { id: string; label: string; note: string }[] = [
+  {
+    id: "contributed",
+    label: "🌱 I just contributed!",
+    note: "I just supported this campaign! Join me in helping our community reach the goal.",
+  },
+  {
+    id: "heart",
+    label: "❤️ Close to my heart",
+    note: "This campaign is close to my heart. Join me in helping our community reach the goal.",
+  },
+  {
+    id: "join",
+    label: "🤝 Join our goal",
+    note: "Join our goal and help our community get there together.",
+  },
 ];
+
+export const DEFAULT_SHARE_NOTE = SHARE_NOTE_PRESETS[0].note;
 
 function clamp(value: string, max: number): string {
   return value.trim().slice(0, max);
@@ -39,10 +53,10 @@ export function buildShareMessage(name: string, note: string, link: string): str
 
 export type ParsedEndorsement = { endorsedBy: string; note: string };
 
-/** Reads endorsedBy/note out of raw query values, trimmed and length-capped. No name -> nothing honest to show. */
+/** Reads endorsedBy/note out of raw query values, trimmed and length-capped. A note alone is enough to show. */
 export function parseEndorsement(endorsedByRaw: string | null | undefined, noteRaw: string | null | undefined): ParsedEndorsement | null {
   const endorsedBy = clamp(endorsedByRaw ?? "", MAX_ENDORSER_NAME);
-  if (!endorsedBy) return null;
   const note = clamp(noteRaw ?? "", MAX_ENDORSEMENT_NOTE);
+  if (!endorsedBy && !note) return null;
   return { endorsedBy, note };
 }

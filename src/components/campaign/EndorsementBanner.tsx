@@ -15,7 +15,9 @@ export function EndorsementBanner() {
         💬
       </span>
       <div>
-        <p className="font-semibold text-[var(--color-success)]">{endorsement.endorsedBy} shared this cause with you:</p>
+        <p className="font-semibold text-[var(--color-success)]">
+          {endorsement.endorsedBy ? `${endorsement.endorsedBy} shared this cause with you:` : "Shared with you:"}
+        </p>
         {endorsement.note ? (
           <p className="mt-0.5 text-sm italic text-[var(--color-text-muted)]">&ldquo;{endorsement.note}&rdquo;</p>
         ) : null}
