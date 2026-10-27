@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useSyncExternalStore } from "react";
-import { CopyLinkButton } from "@/components/ui/CopyLinkButton";
-import { Modal } from "@/components/ui/Modal";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import { Icon } from "@/components/ui/Icon";
 import {
+  DEFAULT_SHARE_NOTE,
   MAX_ENDORSEMENT_NOTE,
-  MAX_ENDORSER_NAME,
-  QUICK_ENDORSEMENT_PROMPTS,
-  buildPersonalizedShareQuery,
+  SHARE_NOTE_PRESETS,
   buildPersonalizedShareUrl,
   buildShareMessage,
 } from "@/lib/endorsement";
@@ -17,138 +15,164 @@ const noop = () => () => undefined;
 export function PersonalizedShareModal({
   path,
   campaignTitle,
-  defaultName = "",
   onClose,
-  onNameChange,
 }: {
   /** Canonical public path for this campaign, e.g. /org/acme/help-us-plant-trees */
   path: string;
   campaignTitle: string;
-  defaultName?: string;
   onClose: () => void;
-  /** Lets the caller remember the supporter's name in this browser for next time. */
-  onNameChange?: (name: string) => void;
 }) {
   const origin = useSyncExternalStore(noop, () => window.location.origin, () => "");
-  const [name, setName] = useState(defaultName);
-  const [note, setNote] = useState("");
+  const [note, setNote] = useState(DEFAULT_SHARE_NOTE);
+  const [copied, setCopied] = useState(false);
+  const link = buildPersonalizedShareUrl(origin, path, "", note);
+  const message = buildShareMessage("", note, link);
+  const encodedLink = encodeURIComponent(link);
+  const selectedId = SHARE_NOTE_PRESETS.find((preset) => preset.note === note)?.id;
 
-  const query = buildPersonalizedShareQuery(name, note);
-  const link = buildPersonalizedShareUrl(origin, path, name, note);
-  const message = buildShareMessage(name, note, link);
-  const displayName = name.trim() || "A supporter";
-  const u = encodeURIComponent(link);
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    document.addEventListener("keydown", onKey);
+    const overflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = overflow;
+    };
+  }, [onClose]);
 
-  const whatsappHref = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-  const xText = note.trim() ? `${displayName} wants you to check out this campaign: "${note.trim()}"` : `${displayName} wants you to check out this campaign`;
-  const xHref = `https://twitter.com/intent/tweet?text=${encodeURIComponent(xText)}&url=${u}`;
-  const linkedinHref = `https://www.linkedin.com/sharing/share-offsite/?url=${u}`;
-  const emailHref = `mailto:?subject=${encodeURIComponent(`${displayName} shared ${campaignTitle} with you`)}&body=${encodeURIComponent(message)}`;
+  const copyLink = async () => {
+    try {
+      await navigator.clipboard.writeText(link);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  const channels = [
+    {
+      id: "whatsapp",
+      label: "WhatsApp",
+      icon: "💬",
+      href: `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`,
+      className: "bg-emerald-50 text-emerald-800 hover:bg-emerald-100",
+    },
+    {
+      id: "email",
+      label: "Email",
+      icon: "✉️",
+      href: `mailto:?subject=${encodeURIComponent(campaignTitle)}&body=${encodeURIComponent(message)}`,
+      className: "bg-gray-50 text-gray-700 hover:bg-gray-100",
+    },
+    {
+      id: "x",
+      label: "X / Post",
+      icon: "𝕏",
+      href: `https://twitter.com/intent/tweet?text=${encodeURIComponent(note.trim())}&url=${encodedLink}`,
+      className: "bg-gray-50 text-gray-700 hover:bg-gray-100",
+    },
+    {
+      id: "linkedin",
+      label: "LinkedIn",
+      icon: "💼",
+      href: `https://www.linkedin.com/sharing/share-offsite/?url=${encodedLink}`,
+      className: "bg-gray-50 text-gray-700 hover:bg-gray-100",
+    },
+  ];
 
   return (
-    <Modal title="Share with a personal note" description="A quick note from you means a lot more than a bare link." onClose={onClose}>
-      <div className="space-y-4">
-        <div>
-          <label htmlFor="endorser-name" className="block text-sm font-semibold">
-            Your name
-          </label>
-          <input
-            id="endorser-name"
-            value={name}
-            maxLength={MAX_ENDORSER_NAME}
-            onChange={(e) => {
-              setName(e.target.value);
-              onNameChange?.(e.target.value);
-            }}
-            placeholder="Jordan"
-            className="corise-input mt-1.5"
-          />
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+      <button type="button" aria-label="Close" className="absolute inset-0 cursor-default" onClick={onClose} />
+      <div
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="share-campaign-title"
+        className="relative w-full max-w-md overflow-hidden rounded-2xl bg-white p-6 shadow-2xl"
+      >
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-4 top-4 rounded-md p-1 text-gray-700 hover:bg-gray-100"
+        >
+          <Icon name="x" size={18} />
+        </button>
+
+        <h2 id="share-campaign-title" className="pr-8 text-xl font-bold text-gray-900">
+          Share this campaign
+        </h2>
+        <p className="mt-0.5 text-xs text-gray-500">Help spread the word with friends, family, and community.</p>
+
+        <p className="mb-2 mt-5 text-[10px] font-bold uppercase tracking-wider text-amber-900/80">1-tap quick share</p>
+        <div className="grid grid-cols-4 gap-2">
+          {channels.map((channel) => (
+            <a
+              key={channel.id}
+              href={channel.href}
+              target={channel.id === "email" ? undefined : "_blank"}
+              rel={channel.id === "email" ? undefined : "noreferrer"}
+              className={`flex items-center justify-center gap-1.5 rounded-xl px-2 py-2.5 text-xs font-semibold ${channel.className}`}
+            >
+              <span aria-hidden className={channel.id === "linkedin" ? "text-[11px] font-bold" : undefined}>
+                {channel.icon}
+              </span>
+              {channel.label}
+            </a>
+          ))}
         </div>
 
-        <div>
-          <label htmlFor="endorser-note" className="block text-sm font-semibold">
-            Personal note
-          </label>
-          <textarea
-            id="endorser-note"
-            value={note}
-            maxLength={MAX_ENDORSEMENT_NOTE}
-            onChange={(e) => setNote(e.target.value)}
-            placeholder="Why are you supporting this cause? (e.g., I just donated! Join me to help our community...)"
-            rows={3}
-            className="corise-input mt-1.5 resize-none"
-          />
-          <div className="mt-2 flex flex-wrap gap-1.5">
-            {QUICK_ENDORSEMENT_PROMPTS.map((prompt) => (
+        <div className="my-4 flex items-center gap-3" aria-hidden>
+          <span className="h-px flex-1 border-t border-dashed border-gray-300" />
+          <span className="shrink-0 text-[10px] font-semibold uppercase tracking-wider text-gray-400">
+            Or attach a quick note (optional)
+          </span>
+          <span className="h-px flex-1 border-t border-dashed border-gray-300" />
+        </div>
+
+        <div className="flex flex-wrap gap-2">
+          {SHARE_NOTE_PRESETS.map((preset) => {
+            const selected = preset.id === selectedId;
+            return (
               <button
-                key={prompt}
+                key={preset.id}
                 type="button"
-                onClick={() => setNote(prompt)}
-                className="rounded-full border border-black/10 px-2.5 py-1 text-xs font-medium text-[var(--color-text-muted)] transition hover:border-[var(--color-primary)]/50 hover:text-[var(--color-primary)]"
+                aria-pressed={selected}
+                onClick={() => setNote(preset.note)}
+                className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
+                  selected ? "bg-[#183B2E] text-white" : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                }`}
               >
-                {prompt}
+                {preset.label}
               </button>
-            ))}
-          </div>
+            );
+          })}
         </div>
 
-        <div className="rounded-xl bg-[var(--color-bg)] p-3 text-sm text-[var(--color-text-muted)]" data-testid="endorsement-preview">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-[var(--color-text-muted)]">Preview</p>
-          <p className="leading-relaxed">
-            <span className="font-semibold text-[var(--color-text)]">{displayName}</span> wants you to check out this campaign
-            {note.trim() ? (
-              <>
-                : &ldquo;{note.trim()}&rdquo;
-              </>
-            ) : null}{" "}
-            — View Campaign: <span className="font-medium text-[var(--color-primary)]">{link}</span>
-          </p>
-        </div>
+        <label htmlFor="share-note" className="sr-only">
+          Quick note
+        </label>
+        <textarea
+          id="share-note"
+          value={note}
+          maxLength={MAX_ENDORSEMENT_NOTE}
+          rows={2}
+          onChange={(e) => setNote(e.target.value)}
+          className="mt-3 w-full resize-none rounded-xl border-0 bg-[#FAF8F5] p-3 text-xs text-gray-800 outline-none focus:ring-2 focus:ring-[#183B2E]"
+        />
 
-        <div className="flex items-center gap-2 rounded-xl bg-[var(--color-bg)] p-2 pl-3">
-          <input
-            readOnly
-            value={link}
-            aria-label="Personalized link"
-            onFocus={(e) => e.currentTarget.select()}
-            className="min-w-0 flex-1 bg-transparent text-sm font-medium outline-none"
-          />
-          <CopyLinkButton path={`${path}${query}`} label="Copy Personalized Link" variant="primary" />
-        </div>
-
-        <div className="flex flex-wrap gap-2" aria-label="Share with a note">
-          <a
-            href={whatsappHref}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full bg-[var(--color-bg)] px-3 py-1.5 text-[13px] font-medium transition hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary)]"
-          >
-            WhatsApp
-          </a>
-          <a
-            href={xHref}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full bg-[var(--color-bg)] px-3 py-1.5 text-[13px] font-medium transition hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary)]"
-          >
-            X
-          </a>
-          <a
-            href={linkedinHref}
-            target="_blank"
-            rel="noreferrer"
-            className="rounded-full bg-[var(--color-bg)] px-3 py-1.5 text-[13px] font-medium transition hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary)]"
-          >
-            LinkedIn
-          </a>
-          <a
-            href={emailHref}
-            className="rounded-full bg-[var(--color-bg)] px-3 py-1.5 text-[13px] font-medium transition hover:bg-[var(--color-primary-soft)] hover:text-[var(--color-primary)]"
-          >
-            Email
-          </a>
-        </div>
+        <button
+          type="button"
+          onClick={() => void copyLink()}
+          className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-[#183B2E] py-3 text-xs font-semibold text-white hover:bg-[#122D23]"
+        >
+          <span aria-hidden>{copied ? "✓" : "🔗"}</span>
+          {copied ? "Link Copied!" : "Copy Shareable Link"}
+        </button>
       </div>
-    </Modal>
+    </div>
   );
 }
