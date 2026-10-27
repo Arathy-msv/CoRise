@@ -142,7 +142,7 @@ export function canCreateWebsite(mode: DeploymentMode, role: AppRole): boolean {
 }
 export function appHomePath(mode: DeploymentMode, role: AppRole, orgSlug?: string): string {
   const r = effectiveRole(mode, role);
-  if (r === "PLATFORM_ADMIN") return "/admin/platform";
+  if (r === "PLATFORM_ADMIN") return "/create";
   if (r === "ORG_ADMIN") return orgSlug ? `/dashboard/${encodeURIComponent(orgSlug)}` : "/dashboard";
   return "/organizations";
 }
