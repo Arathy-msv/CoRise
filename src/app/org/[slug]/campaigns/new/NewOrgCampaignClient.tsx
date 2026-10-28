@@ -484,6 +484,7 @@ export default function NewOrgCampaignPage({ params }: { params: Promise<{ slug:
         <PublishedModal
           title={published.title}
           path={publicCampaignPath(published.slug, org.orgSlug)}
+          campaign={{ id: published.id, title: published.title, orgSlug: org.orgSlug }}
           onClose={() => router.push("/overview")}
           websiteLive={state.website?.status === "published"}
         />

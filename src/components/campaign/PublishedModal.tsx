@@ -7,7 +7,7 @@ import { CopyLinkButton } from "@/components/ui/CopyLinkButton";
 import { Icon } from "@/components/ui/Icon";
 import { Modal } from "@/components/ui/Modal";
 import { absoluteUrl } from "@/lib/public-asset";
-import { InviteSupporters } from "@/components/campaign/InviteSupporters";
+import { InviteSupporters, type InviteCampaign } from "@/components/campaign/InviteSupporters";
 
 const noop = () => () => undefined;
 
@@ -29,10 +29,13 @@ export function PublishedModal({
   onClose,
   kind = "campaign",
   websiteLive = true,
+  campaign,
 }: {
   title: string;
   path: string;
   onClose: () => void;
+  /** Saves "Share with supporters" invitations for this campaign. */
+  campaign?: InviteCampaign;
   /** Website publish confirms the organization site. Campaign publish keeps join-and-share actions. */
   kind?: "website" | "campaign";
   /** When the org's public website isn't published yet, a campaign link isn't reachable publicly either. */
@@ -67,7 +70,7 @@ export function PublishedModal({
         </div>
 
         {website ? null : inviting ? (
-          <InviteSupporters onBack={() => setInviting(false)} />
+          <InviteSupporters onBack={() => setInviting(false)} campaign={campaign} />
         ) : (
           <div className="space-y-3">
             <div className="flex flex-wrap gap-2" aria-label="Share">
