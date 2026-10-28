@@ -8,40 +8,48 @@ import { DEPLOYMENT_MODES, availableRoles, isValidLicenseKey, sampleLicenseKey, 
 
 type Tone = "dark" | "light";
 
+const DEPLOYMENT_MODE_DISCLAIMER = "Illustrative — not connected to billing or hosting.";
+
 export function ModeSwitcher({ tone = "dark", compact = false }: { tone?: Tone; compact?: boolean }) {
   const { mode, setMode } = useApp();
   const dark = tone === "dark";
   return (
-    <div
-      role="group"
-      aria-label="Deployment mode"
-      className={`inline-flex rounded-full p-0.5 ${dark ? "bg-white/10 ring-1 ring-white/15" : "bg-[var(--color-bg)] ring-1 ring-[var(--color-border)]"}`}
-    >
-      {DEPLOYMENT_MODES.map((m) => {
-        const active = mode === m.id;
-        return (
-          <button
-            key={m.id}
-            type="button"
-            aria-pressed={active}
-            onClick={() => setMode(m.id)}
-            className={`inline-flex items-center gap-1.5 rounded-full font-semibold transition focus-visible:outline-2 focus-visible:outline-[var(--color-emerald)] ${
-              compact ? "h-7 px-2.5 text-[11px]" : "h-8 px-3 text-xs sm:text-[13px]"
-            } ${
-              active
-                ? dark
-                  ? "bg-white text-[var(--color-navy)]"
-                  : "bg-white text-[var(--color-text)] shadow-sm"
-                : dark
-                  ? "text-white/70 hover:text-white"
-                  : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
-            }`}
-          >
-            <span aria-hidden>{m.icon}</span>
-            {compact ? m.label.split(" ")[0] : m.label}
-          </button>
-        );
-      })}
+    <div className="inline-flex flex-col gap-1">
+      <div
+        role="group"
+        aria-label="Deployment mode"
+        title={DEPLOYMENT_MODE_DISCLAIMER}
+        className={`inline-flex rounded-full p-0.5 ${dark ? "bg-white/10 ring-1 ring-white/15" : "bg-[var(--color-bg)] ring-1 ring-[var(--color-border)]"}`}
+      >
+        {DEPLOYMENT_MODES.map((m) => {
+          const active = mode === m.id;
+          return (
+            <button
+              key={m.id}
+              type="button"
+              aria-pressed={active}
+              onClick={() => setMode(m.id)}
+              className={`inline-flex items-center gap-1.5 rounded-full font-semibold transition focus-visible:outline-2 focus-visible:outline-[var(--color-emerald)] ${
+                compact ? "h-7 px-2.5 text-[11px]" : "h-8 px-3 text-xs sm:text-[13px]"
+              } ${
+                active
+                  ? dark
+                    ? "bg-white text-[var(--color-navy)]"
+                    : "bg-white text-[var(--color-text)] shadow-sm"
+                  : dark
+                    ? "text-white/70 hover:text-white"
+                    : "text-[var(--color-text-muted)] hover:text-[var(--color-text)]"
+              }`}
+            >
+              <span aria-hidden>{m.icon}</span>
+              {compact ? m.label.split(" ")[0] : m.label}
+            </button>
+          );
+        })}
+      </div>
+      <span className={compact ? "sr-only" : `text-[11px] ${dark ? "text-white/60" : "text-[var(--color-text-muted)]"}`}>
+        {DEPLOYMENT_MODE_DISCLAIMER}
+      </span>
     </div>
   );
 }

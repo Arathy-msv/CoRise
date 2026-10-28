@@ -202,6 +202,12 @@ export function OrgReadyDialog({ result, onClose }: { result: ProvisionSuccess; 
             <Icon name="info" size={14} />
             This password won&apos;t be shown again. Sign-in only works in this browser for now.
           </p>
+          {result.licenseKey ? (
+            <p className="mt-2 inline-flex w-full items-start gap-2 rounded-lg bg-[#EDEFF2] px-3 py-2 text-[11px] text-gray-600">
+              <Icon name="info" size={14} />
+              Illustrative — this license key is not connected to billing or hosting.
+            </p>
+          ) : null}
         </section>
 
         <button
