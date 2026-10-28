@@ -38,6 +38,11 @@ const PATHS = {
   upload: "M12 16V4M7 9l5-5 5 5M4 16v4h16v-4",
   camera: "M4 8h3l2-3h6l2 3h3v11H4zM12 17a4 4 0 100-8 4 4 0 000 8z",
   user: "M12 12a4 4 0 100-8 4 4 0 000 8zM4.5 20a7.5 7.5 0 0115 0",
+  link: "M10 14a4 4 0 005.7 0l3-3a4 4 0 00-5.7-5.7l-1 1M14 10a4 4 0 00-5.7 0l-3 3a4 4 0 005.7 5.7l1-1",
+  trophy: "M8 4h8v5a4 4 0 01-8 0V4zM8 6H5a3 3 0 003 4M16 6h3a3 3 0 01-3 4M12 13v4M8 20h8M10 17h4v3h-4z",
+  mail: "M4 6h16v12H4zM4 7l8 6 8-6",
+  search: "M11 18a7 7 0 100-14 7 7 0 000 14zM20 20l-4-4",
+  compass: "M12 21a9 9 0 100-18 9 9 0 000 18zM15.5 8.5l-2 5-5 2 2-5 5-2z",
 } as const;
 
 export type IconName = keyof typeof PATHS;

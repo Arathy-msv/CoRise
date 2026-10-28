@@ -81,7 +81,10 @@ export default function CreateCampaignPage() {
         ) : null}
         {inviting ? (
           <div className="text-left">
-            <InviteSupporters onBack={() => setInviting(false)} />
+            <InviteSupporters
+              onBack={() => setInviting(false)}
+              campaign={camp ? { id: camp.id, title: camp.title, orgSlug: state.organization.orgSlug } : undefined}
+            />
           </div>
         ) : (
           <Button variant="secondary" onClick={() => setInviting(true)}>

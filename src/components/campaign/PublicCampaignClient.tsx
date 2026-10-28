@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense, useEffect, useRef, useState, type FormEvent } from "react";
+import { Suspense, useEffect, useRef, useState, useSyncExternalStore, type FormEvent } from "react";
 import Link from "next/link";
 import { CampaignGamifiedProgress } from "@/components/campaign/CampaignGamifiedProgress";
 import { CampaignLayout, campaignHasActivities } from "@/components/campaign/CampaignLayout";
@@ -16,11 +16,15 @@ import { CastleView } from "@/components/castle/CastleView";
 import { Button } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { ToastHost } from "@/components/ui/Toast";
+import { SupporterNoteBanner } from "@/components/supporter/SupporterNoteBanner";
+import { useSupporterNetwork } from "@/components/supporter/supporter-data";
 import { useCorise } from "@/context/CoriseContext";
-import { formatInr, percent } from "@/lib/format";
+import { formatInr, percent, uid } from "@/lib/format";
 import { findWorkspaceBySlug, type OrgWorkspace } from "@/lib/org-access";
 import { publicCampaignPath, publicOrgPath } from "@/lib/paths";
 import { CAMPAIGN_CLOSED_MESSAGE, campaignProgress, formatGoalValue, formatUsd, isCampaignClosed, parsePledge, progressPercent } from "@/lib/progress";
+import { defaultPersonalNote, recordReferralConversion, resolveReferrer, type ConversionKind } from "@/lib/supporter-network";
+import { findSupporter } from "@/lib/supporters";
 import type { Campaign } from "@/types/corise";
 import { CAMPAIGN_TYPE_META } from "@/types/corise";
 
@@ -39,6 +43,12 @@ function SharePill({ prominent = false, onClick }: { prominent?: boolean; onClic
       Share
     </button>
   );
+}
+
+const noop = () => () => undefined;
+
+function supporterParam(): string | null {
+  return new URLSearchParams(window.location.search).get("supporter");
 }
 
 /** Progress is shown only when real (or clearly labeled sample) money has been recorded. */
@@ -81,6 +91,8 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
   const actionRef = useRef<HTMLDivElement>(null);
   const pledgeRef = useRef<HTMLInputElement>(null);
   const launchRef = useRef<HTMLDivElement>(null);
+  const network = useSupporterNetwork();
+  const referrerId = useSyncExternalStore(noop, supporterParam, () => null);
 
   if (!hydrated || (Boolean(orgSlug) && !orgMatches && !workspaceReady)) {
     return (
@@ -111,6 +123,24 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
 
   const goal = campaignProgress(campaign);
   const closed = isCampaignClosed(campaign);
+  /** Invalid, unknown, or other-campaign supporter ids fall back to the ordinary page. */
+  const referrer = resolveReferrer(network, publicOrganization.orgSlug, campaign.id, referrerId);
+  const referrerName = referrer ? findSupporter(referrer.supporterId)?.name : undefined;
+  const attribute = (kind: ConversionKind, amount: number) => {
+    if (!referrer) return;
+    recordReferralConversion({
+      conversionId: uid("conv"),
+      orgSlug: publicOrganization.orgSlug,
+      campaignId: campaign.id,
+      referringSupporterId: referrer.supporterId,
+      kind,
+      amount,
+    });
+  };
+  const participate = () => {
+    recordParticipation(campaign.id);
+    if (orgMatches && !closed) attribute("participation", 0);
+  };
   const pledgeGoal = goal?.goalType === "amount";
   const isTreeGame = Boolean(goal && pledgeGoal && goal.widget === "tree");
   const isRaceGame = Boolean(goal && pledgeGoal && goal.widget === "race");
@@ -134,7 +164,9 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
   if (isPlayableGame && launchMode && goal && !closed) {
     const onPledge = (amount: number): number | false => {
       const result = recordPledge(campaign.id, amount);
-      return result.accepted > 0 ? result.accepted : false;
+      if (result.accepted <= 0) return false;
+      attribute("pledge", result.accepted);
+      return result.accepted;
     };
     const onBack = () => setLaunchMode(null);
     const payToggle = showToggle ? { onSwitch: () => { setSelectedMode("pay"); setLaunchMode("pay"); } } : undefined;
@@ -236,6 +268,7 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
       setPledgeError(CAMPAIGN_CLOSED_MESSAGE);
       return;
     }
+    attribute("pledge", result.accepted);
     setPledged(result.accepted);
     setPledgeError("");
     setPledgeInput("");
@@ -261,7 +294,7 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
       return;
     }
     if (ctaDone) return;
-    recordParticipation(campaign.id);
+    participate();
     setCtaDone(true);
   };
 
@@ -290,11 +323,14 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
           title: campaign.headline || campaign.title,
           subtitle: campaign.description,
           introShare: <SharePill onClick={() => setShareOpen(true)} />,
-          banner: (
-            <Suspense fallback={null}>
-              <EndorsementBanner />
-            </Suspense>
-          ),
+          banner:
+            referrer && referrerName ? (
+              <SupporterNoteBanner name={referrerName} note={referrer.personalNote || defaultPersonalNote(campaign.title)} />
+            ) : (
+              <Suspense fallback={null}>
+                <EndorsementBanner />
+              </Suspense>
+            ),
           whyItMatters: campaign.whyItMatters,
           whyShare: <SharePill prominent onClick={() => setShareOpen(true)} />,
           widget: closed ? (
@@ -511,7 +547,7 @@ export default function PublicCampaignClient({ slug, orgSlug }: { slug: string; 
                       className="mt-4"
                       onClick={() => {
                         setChallengeDone(true);
-                        recordParticipation(campaign.id);
+                        participate();
                       }}
                     >
                       Mark challenge complete

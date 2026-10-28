@@ -19,6 +19,19 @@ export function shareCampaignPath(campaignSlug: string, orgSlug?: string): strin
   return orgSlug ? `/open/campaign/?org=${encodeURIComponent(orgSlug)}&slug=${slug}` : `/open/campaign/?slug=${slug}`;
 }
 
+/** A supporter's personal link. Opens the same shared campaign page; `supporter` is checked against real memberships. */
+export function supporterCampaignPath(campaignSlug: string, orgSlug: string, supporterId: string): string {
+  const params = new URLSearchParams({ org: orgSlug, slug: campaignSlug, supporter: supporterId });
+  return `/open/campaign/?${params.toString()}`;
+}
+
+export type SupporterView = "campaigns" | "my-campaigns" | "invitations";
+
+/** Supporter pages keep the organization in the query so they work for organizations created after deploy. */
+export function supporterViewPath(view: SupporterView, orgSlug?: string): string {
+  return orgSlug ? `/supporter/${view}?org=${encodeURIComponent(orgSlug)}` : `/supporter/${view}`;
+}
+
 /** Create-campaign page. A static file plus a query, so a new organization can open it after deploy. */
 export function newCampaignPath(orgSlug: string): string {
   return `/open/campaign/new/?slug=${encodeURIComponent(orgSlug)}`;

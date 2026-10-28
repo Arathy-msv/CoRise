@@ -480,6 +480,7 @@ function PreviewInner() {
         <PublishedModal
           title={sharedCampaign.title}
           path={publicCampaignPath(sharedCampaign.slug, state.organization.orgSlug)}
+          campaign={{ id: sharedCampaign.id, title: sharedCampaign.title, orgSlug: state.organization.orgSlug }}
           onClose={() => setSharedId(null)}
           websiteLive={state.website?.status === "published"}
         />

@@ -7,6 +7,8 @@ import { Badge, StatusBadge } from "@/components/ui/Badge";
 import { Button, ButtonLink } from "@/components/ui/Button";
 import { EmptyState } from "@/components/ui/EmptyState";
 import { Icon } from "@/components/ui/Icon";
+import { Modal } from "@/components/ui/Modal";
+import { InviteSupporters } from "@/components/campaign/InviteSupporters";
 import { PageHeader, SectionHeader } from "@/components/ui/PageHeader";
 import { PublicLink } from "@/components/ui/PublicLink";
 import { useCorise } from "@/context/CoriseContext";
@@ -22,6 +24,7 @@ export default function CampaignDetailClient({ id }: { id: string }) {
   const campaign = getCampaign(id);
   const [busy, setBusy] = useState(false);
   const [callout, setCallout] = useState<Callout | null>(null);
+  const [inviting, setInviting] = useState(false);
 
   if (!campaign) {
     return (
@@ -94,6 +97,12 @@ export default function CampaignDetailClient({ id }: { id: string }) {
           s === "archived" ? null : (
             <>
               {isLive ? (
+                <Button variant="secondary" onClick={() => setInviting(true)}>
+                  <Icon name="mail" />
+                  Invite supporters
+                </Button>
+              ) : null}
+              {isLive ? (
                 <ButtonLink href={publicCampaignPath(campaign.slug, state.organization.orgSlug)} target="_blank" rel="noreferrer" variant="secondary">
                   <Icon name="external" />
                   {gameLabel}
@@ -126,6 +135,20 @@ export default function CampaignDetailClient({ id }: { id: string }) {
       ) : null}
 
       {isLive ? <PublicLink path={publicCampaignPath(campaign.slug, state.organization.orgSlug)} label="Public campaign link" /> : null}
+
+      {inviting && isLive ? (
+        <Modal
+          title="Invite supporters"
+          description={`Invitations to ${campaign.title} appear on each supporter's Invitations page in this browser. Nothing is emailed.`}
+          onClose={() => setInviting(false)}
+        >
+          <InviteSupporters
+            onBack={() => setInviting(false)}
+            backLabel="Close"
+            campaign={{ id: campaign.id, title: campaign.title, orgSlug: state.organization.orgSlug }}
+          />
+        </Modal>
+      ) : null}
 
       <div>
         <section className="min-w-0 space-y-2" aria-label="Campaign preview">
