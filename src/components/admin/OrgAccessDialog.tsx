@@ -59,6 +59,9 @@ export function OrgAccessDialog({
               <>
                 <Line label="License number" value={org.licenseKey || "Not set"} />
                 <Line label="License status" value={licenseLabel(org.licenseStatus)} />
+                <p className="text-xs text-[var(--color-text-muted)]">
+                  Illustrative — not connected to billing or hosting. No license server is contacted.
+                </p>
               </>
             ) : null}
             <Line label="Admin email" value={org.adminEmail || "Not set"} />

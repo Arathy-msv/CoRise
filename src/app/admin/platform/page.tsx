@@ -152,6 +152,9 @@ export default function PlatformAdminPage() {
             <p className="mt-1 max-w-2xl text-sm text-[var(--color-text-muted)]">
               Every organization website on Corise Cloud. New organizations start with no campaigns. Figures are saved in this browser.
             </p>
+            <p className="mt-1 max-w-2xl text-xs text-[var(--color-text-muted)]">
+              Mode and License are illustrative — not connected to billing or hosting.
+            </p>
           </div>
           <ButtonLink href="/create" size="lg" className="shrink-0">
             <Icon name="plus" />
