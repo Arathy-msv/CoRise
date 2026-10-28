@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { Field, TextInput } from "@/components/ui/Field";
 import { useApp } from "@/context/AppContext";
 import { useCorise } from "@/context/CoriseContext";
-import { activateOrgAdminRole, authenticateOrgAdmin, readOrgLoginHint, type OrgLoginHint } from "@/lib/org-access";
+import { activateOrgAdminRole, authenticateOrgAdmin, findWorkspaceBySlug, readOrgLoginHint, type OrgLoginHint } from "@/lib/org-access";
 import { orgDashboardPath } from "@/lib/paths";
 import { openAppPath } from "@/lib/static-nav";
 
@@ -69,6 +69,39 @@ function LoginInner() {
     setRole("ORG_ADMIN");
     activateOrgAdminRole();
     openAppPath(orgDashboardPath(result.workspace.organization.orgSlug), router);
+  };
+
+  /** Organization Admin demo login — mirrors Supporter login's "no password check" pattern. */
+  const demoAdminLogin = () => {
+    setError("");
+    if (orgSlug && listed?.provisioned) {
+      if (listed.accessMode === "licensed" && listed.licenseStatus !== "active") {
+        setError(
+          listed.licenseStatus === "expired"
+            ? "This organization's license has expired. Ask your Corise administrator to renew it."
+            : "This organization's license is not active. Ask your Corise administrator for help."
+        );
+        return;
+      }
+      const workspace = findWorkspaceBySlug(orgSlug);
+      if (!workspace) {
+        setError("This organization's workspace could not be opened. Ask your administrator for help.");
+        return;
+      }
+      enterOrganizationSession({
+        organizationId: listed.id,
+        email: listed.adminEmail || "demo-admin@corise.demo",
+        name: listed.adminName || listed.name,
+        workspace,
+      });
+      setRole("ORG_ADMIN");
+      activateOrgAdminRole();
+      openAppPath(orgDashboardPath(workspace.organization.orgSlug), router);
+      return;
+    }
+    // No specific organization in the URL (or it isn't a real provisioned one): open the sample workspace.
+    signIn();
+    router.push("/overview");
   };
 
   return (
@@ -139,6 +172,10 @@ function LoginInner() {
           Supporter login
         </Button>
         <p className="text-center text-xs text-[var(--color-text-muted)]">Supporter login is a demo. It does not check a password.</p>
+        <Button className="w-full" size="lg" type="button" variant="secondary" onClick={demoAdminLogin}>
+          Demo admin login
+        </Button>
+        <p className="text-center text-xs text-[var(--color-text-muted)]">Demo admin login does not check a password.</p>
       </form>
 
       <p className="text-xs text-[var(--color-text-muted)]">
